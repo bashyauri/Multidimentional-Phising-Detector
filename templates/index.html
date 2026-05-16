@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero p-4 mb-4">
+    <h1>A Machine Learning-Based Multimodal Approach for Detection and Prevention of Emerging Phishing Attacks</h1>
+    <p>Academic prototype for phishing detection using URL, Email, SMS, QR, and Deepfake signals with weighted multimodal fusion.</p>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card-panel p-3">
+            <h2>URL Scan</h2>
+            <form id="urlForm">
+                <input class="form-control mb-2" type="url" name="url" placeholder="https://example.com/login" required>
+                <button class="btn btn-action" type="submit">Analyze URL</button>
+            </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>Email Scan</h2>
+            <form id="emailForm">
+                <textarea class="form-control mb-2" name="email_text" rows="4" placeholder="Paste email content" required></textarea>
+                <button class="btn btn-action" type="submit">Analyze Email</button>
+            </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>SMS Scan</h2>
+            <form id="smsForm">
+                <textarea class="form-control mb-2" name="sms_text" rows="3" placeholder="Paste SMS text" required></textarea>
+                <button class="btn btn-action" type="submit">Analyze SMS</button>
+            </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>QR Scan</h2>
+            <form id="qrForm" enctype="multipart/form-data">
+                <input class="form-control mb-2" type="file" name="qr_file" accept="image/*" required>
+                <button class="btn btn-action" type="submit">Decode and Analyze QR</button>
+            </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>Deepfake Scan (Simulated)</h2>
+            <form id="deepfakeForm" enctype="multipart/form-data">
+                <input class="form-control mb-2" type="file" name="media_file" accept="video/*,image/*" required>
+                <button class="btn btn-action" type="submit">Analyze Media</button>
+            </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>Multimodal Fusion</h2>
+            <form id="fusionForm">
+                <input class="form-control mb-2" type="url" name="url" placeholder="Optional URL">
+                <textarea class="form-control mb-2" name="email_text" rows="3" placeholder="Optional email text"></textarea>
+                <textarea class="form-control mb-2" name="sms_text" rows="2" placeholder="Optional SMS text"></textarea>
+                <input class="form-control mb-2" type="url" name="qr_url" placeholder="Optional decoded QR URL">
+                <input class="form-control mb-2" type="number" step="0.01" min="0" max="1" name="deepfake_probability" placeholder="Optional deepfake probability (0-1)">
+                <button class="btn btn-action" type="submit">Run Fusion Decision</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card-panel p-3 mb-3">
+            <h2>Live Detection Result</h2>
+            <pre id="resultBox" class="result-box">No prediction yet.</pre>
+        </div>
+
+        <div class="card-panel p-3 mb-3">
+            <h2>Model Metrics</h2>
+            <canvas id="accuracyChart" height="120"></canvas>
+            <canvas id="prfChart" height="120" class="mt-3"></canvas>
+            <canvas id="rocChart" height="120" class="mt-3"></canvas>
+        </div>
+
+        <div class="card-panel p-3 mb-3">
+            <h2>Confusion Matrix Components</h2>
+            <canvas id="confusionChart" height="130"></canvas>
+        </div>
+
+        <div class="card-panel p-3 mb-3">
+            <h2>Operational Analytics</h2>
+            <canvas id="distributionChart" height="120"></canvas>
+            <canvas id="trendChart" height="120" class="mt-3"></canvas>
+            <canvas id="responseChart" height="120" class="mt-3"></canvas>
+        </div>
+
+        <div class="card-panel p-3">
+            <h2>Recent Predictions</h2>
+            <div class="table-responsive">
+                <table class="table table-sm text-light align-middle">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Label</th>
+                            <th>Confidence</th>
+                            <th>Response (ms)</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

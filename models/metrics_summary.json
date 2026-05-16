@@ -1,0 +1,71 @@
+{
+  "url": {
+    "accuracy": 0.9964799932144448,
+    "precision": 0.995562786570034,
+    "recall": 0.9982944011865035,
+    "f1": 0.9969267227015218,
+    "confusion_matrix": [
+      [
+        20069,
+        120
+      ],
+      [
+        46,
+        26924
+      ]
+    ],
+    "tp": 26924,
+    "tn": 20069,
+    "fp": 120,
+    "fn": 46,
+    "roc_auc": 0.9985967929356054,
+    "model": "RandomForestClassifier",
+    "dataset": "datasets\\url_phishing.csv"
+  },
+  "email": {
+    "accuracy": 0.992976631336994,
+    "precision": 0.9920164233576643,
+    "recall": 0.9954222934309911,
+    "f1": 0.9937164400776877,
+    "confusion_matrix": [
+      [
+        3427,
+        35
+      ],
+      [
+        20,
+        4349
+      ]
+    ],
+    "tp": 4349,
+    "tn": 3427,
+    "fp": 35,
+    "fn": 20,
+    "roc_auc": 0.9996080123881044,
+    "model": "LogisticRegression + TF-IDF",
+    "dataset": "datasets\\email_phishing.csv"
+  },
+  "sms": {
+    "accuracy": 0.97847533632287,
+    "precision": 0.9139072847682119,
+    "recall": 0.9261744966442953,
+    "f1": 0.92,
+    "confusion_matrix": [
+      [
+        953,
+        13
+      ],
+      [
+        11,
+        138
+      ]
+    ],
+    "tp": 138,
+    "tn": 953,
+    "fp": 13,
+    "fn": 11,
+    "roc_auc": 0.9877374352133615,
+    "model": "LogisticRegression + TF-IDF (balanced)",
+    "dataset": "datasets\\sms_spam.csv"
+  }
+}

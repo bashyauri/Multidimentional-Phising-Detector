@@ -1,0 +1,23 @@
+{
+  "accuracy": 0.9964799932144448,
+  "precision": 0.995562786570034,
+  "recall": 0.9982944011865035,
+  "f1": 0.9969267227015218,
+  "confusion_matrix": [
+    [
+      20069,
+      120
+    ],
+    [
+      46,
+      26924
+    ]
+  ],
+  "tp": 26924,
+  "tn": 20069,
+  "fp": 120,
+  "fn": 46,
+  "roc_auc": 0.9985967929356054,
+  "model": "RandomForestClassifier",
+  "dataset": "datasets\\url_phishing.csv"
+}

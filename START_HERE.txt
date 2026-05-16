@@ -1,0 +1,31 @@
+PHISHING RESEARCH APP - CLIENT QUICK START
+=========================================
+
+1) Install Python 3.13+ from:
+   https://www.python.org/downloads/
+   During install, enable: Add Python to PATH
+
+2) Extract this package to any folder.
+
+3) Double-click: launch_client.bat
+   - First run: it will auto-install dependencies.
+   - Next runs: it starts the app immediately.
+
+4) Your browser should open automatically at:
+   http://127.0.0.1:5000
+
+Optional:
+- Create desktop shortcut:
+  Double-click create_desktop_shortcut.bat
+
+- Train models after adding datasets:
+  Double-click train_models.bat
+
+Expected datasets folder files:
+- datasets/url_phishing.csv
+- datasets/email_phishing.csv
+- datasets/sms_spam.csv
+
+If Python is not recognized:
+- Reinstall Python and check "Add Python to PATH"
+- Then run launch_client.bat again.
