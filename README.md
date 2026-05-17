@@ -151,6 +151,7 @@ Practical workflow:
 3. Ensure each CSV has a text/URL column and a label column.
 4. Copy all 3 files into `datasets/`.
 5. For deepfake training, place FaceForensics++ real samples in `original/` and fake samples in `manipulated/`.
+   You can also run `download_faceforensics_subset.bat` to download a small `c23` subset directly into those folders.
 6. Run `validate_datasets.bat`.
 7. Run `train_models.bat`, `train_deepfake.bat`, or manual training commands.
 

@@ -1,0 +1,29 @@
+{
+  "accuracy": 0.25,
+  "precision": 0.3333333333333333,
+  "recall": 0.5,
+  "f1": 0.4,
+  "confusion_matrix": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "tp": 1,
+  "tn": 0,
+  "fp": 2,
+  "fn": 1,
+  "roc_auc": 0.25,
+  "model": "RandomForestClassifier",
+  "dataset": "datasets\\faceforensics",
+  "class_counts": {
+    "0": 10,
+    "1": 10
+  },
+  "max_frames_per_video": 12,
+  "notes": "Class 0=original/real, class 1=manipulated/deepfake"
+}
