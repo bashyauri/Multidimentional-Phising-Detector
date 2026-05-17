@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local database/runtime files
+database/*.db
+
+# Large licensed deepfake media should stay local.
+datasets/faceforensics/original/**
+datasets/faceforensics/manipulated/**
+datasets/faceforensics/frames/**
+!datasets/faceforensics/original/.gitkeep
+!datasets/faceforensics/manipulated/.gitkeep
+!datasets/faceforensics/frames/.gitkeep

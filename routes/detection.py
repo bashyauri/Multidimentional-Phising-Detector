@@ -9,6 +9,7 @@ from sqlalchemy import func
 from database.db import db
 from database.models import PredictionLog
 from utils.fusion import weighted_fusion
+from utils.deepfake_features import extract_media_features_from_bytes
 from utils.model_loader import registry
 from utils.preprocessing import clean_text, extract_url_features
 from utils.qr_utils import decode_qr_image
@@ -21,6 +22,12 @@ KNOWN_LEGITIMATE_DOMAINS = {
     "facebook.com", "twitter.com", "linkedin.com", "youtube.com", "instagram.com",
     "stackoverflow.com", "reddit.com", "wikipedia.org", "github.io", "bitbucket.org",
     "gitlab.com", "heroku.com", "vercel.com", "netlify.com", "aws.amazon.com",
+}
+
+KNOWN_SHORTENER_DOMAINS = {
+    "bit.ly", "buff.ly", "cutt.ly", "goo.gl", "is.gd", "lnkd.in", "ow.ly",
+    "qr.link", "rebrand.ly", "shorturl.at", "t.co", "tiny.cc", "tinyurl.com",
+    "trib.al", "urly.it", "v.gd",
 }
 
 # Educational and government domains (generally legitimate)
@@ -107,6 +114,10 @@ def _has_phishing_domain_pattern(domain: str) -> bool:
     return False
 
 
+def _is_known_shortener_domain(domain: str) -> bool:
+    return any(domain == shortener or domain.endswith(f".{shortener}") for shortener in KNOWN_SHORTENER_DOMAINS)
+
+
 def _log_prediction(source_type, input_text, label, confidence, response_time_ms, fusion_used=False):
     row = PredictionLog(
         source_type=source_type,
@@ -155,6 +166,10 @@ def _predict_url(url: str):
     # Check for common phishing domain patterns (e.g., "account-verify")
     if _has_phishing_domain_pattern(domain):
         prob = max(prob, 0.72)
+
+    # Shortened QR links can hide the real destination from offline analysis.
+    if _is_known_shortener_domain(domain):
+        prob = max(prob, 0.62)
     
     # Check legitimacy whitelist
     is_known_legitimate = any(domain.endswith(known) or domain == known for known in KNOWN_LEGITIMATE_DOMAINS)
@@ -199,6 +214,16 @@ def _predict_text(text: str, model):
 
 
 def _predict_deepfake(file_bytes: bytes, filename: str):
+    if registry.deepfake_model is not None:
+        try:
+            features = extract_media_features_from_bytes(file_bytes, filename)
+            prob = float(registry.deepfake_model.predict_proba([features])[0][1])
+            prob = min(0.99, max(0.01, prob))
+            label, confidence = _label_from_probability(prob)
+            return label, confidence, prob, "trained_model"
+        except Exception:
+            pass
+
     name = (filename or "").lower()
     if "fake" in name or "deepfake" in name:
         prob = 0.86
@@ -208,7 +233,7 @@ def _predict_deepfake(file_bytes: bytes, filename: str):
 
     prob = min(0.99, max(0.01, prob))
     label, confidence = _label_from_probability(prob)
-    return label, confidence, prob
+    return label, confidence, prob, "simulation_fallback"
 
 
 @detection_bp.route("/")
@@ -296,11 +321,19 @@ def detect_deepfake():
     media_file = request.files["media_file"]
     data = media_file.read()
 
-    label, confidence, prob = _predict_deepfake(data, media_file.filename)
+    label, confidence, prob, model_status = _predict_deepfake(data, media_file.filename)
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("deepfake", media_file.filename or "uploaded_file", label, confidence, elapsed)
-    return jsonify({"source": "deepfake", "label": label, "confidence": confidence, "phishing_probability": prob})
+    return jsonify(
+        {
+            "source": "deepfake",
+            "label": label,
+            "confidence": confidence,
+            "phishing_probability": prob,
+            "model_status": model_status,
+        }
+    )
 
 
 @detection_bp.route("/api/detect/fusion", methods=["POST"])

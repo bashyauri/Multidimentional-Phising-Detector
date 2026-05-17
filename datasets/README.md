@@ -6,6 +6,7 @@ Expected default filenames:
 - `url_phishing.csv`
 - `email_phishing.csv`
 - `sms_spam.csv`
+- `faceforensics/`
 
 ## Where to get datasets
 
@@ -42,6 +43,12 @@ Important:
 
 - Deepfake module (simplified): no training dataset required in this prototype.
 	The module returns a simulated score for research workflow demonstration.
+
+- Deepfake module (real dataset option): place FaceForensics++ media inside
+	`datasets/faceforensics/`.
+	Use `original/` for real samples and `manipulated/` for fake samples.
+	The actual media files are ignored by Git because FaceForensics++ is large
+	and distributed under dataset access terms.
 
 ## Required columns
 

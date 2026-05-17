@@ -42,6 +42,10 @@ echo [INFO] Training SMS model...
 .venv\Scripts\python.exe -m ml_training.train_sms --dataset datasets/sms_spam.csv
 if errorlevel 1 goto :train_error
 
+echo [INFO] Training Deepfake model if FaceForensics samples are available...
+.venv\Scripts\python.exe -m ml_training.train_deepfake --dataset-dir datasets/faceforensics --skip-if-empty
+if errorlevel 1 goto :train_error
+
 echo [SUCCESS] Model training complete.
 echo You can now run run_client.bat
 pause
