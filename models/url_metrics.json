@@ -1,23 +1,23 @@
 {
-  "accuracy": 0.9964799932144448,
-  "precision": 0.995562786570034,
-  "recall": 0.9982944011865035,
-  "f1": 0.9969267227015218,
+  "accuracy": 0.9973705973409105,
+  "precision": 0.9956794682422452,
+  "recall": 0.999740452354468,
+  "f1": 0.9977058279370953,
   "confusion_matrix": [
     [
-      20069,
-      120
+      20072,
+      117
     ],
     [
-      46,
-      26924
+      7,
+      26963
     ]
   ],
-  "tp": 26924,
-  "tn": 20069,
-  "fp": 120,
-  "fn": 46,
-  "roc_auc": 0.9985967929356054,
-  "model": "RandomForestClassifier",
+  "tp": 26963,
+  "tn": 20072,
+  "fp": 117,
+  "fn": 7,
+  "roc_auc": 0.9990484608987891,
+  "model": "XGBoost + URL feature engineering",
   "dataset": "datasets\\url_phishing.csv"
 }

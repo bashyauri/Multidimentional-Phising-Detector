@@ -1,0 +1,74 @@
+[
+  {
+    "case_id": "fusion_001_high_risk_all_signals",
+    "expected_intent": "phishing",
+    "url": "https://paypal-secure-login-verify.example.com/account/update",
+    "email_text": "Urgent: Your PayPal account has been limited. Verify your identity within 2 hours to avoid suspension: https://paypal-secure-login-verify.example.com/account/update",
+    "sms_text": "PAYPAL ALERT: unusual sign-in detected. Verify now at https://bit.ly/verify-paypal-2026",
+    "qr_url": "https://paypal-secure-login-verify.example.com/qr/confirm",
+    "deepfake_probability": 0.82
+  },
+  {
+    "case_id": "fusion_002_legitimate_all_signals",
+    "expected_intent": "legitimate",
+    "url": "https://github.com/login",
+    "email_text": "Your GitHub password was changed successfully. If this was you, no action is needed. Visit https://github.com/settings/security to review your security settings.",
+    "sms_text": "GitHub: your two-factor authentication code is 482913. Do not share this code.",
+    "qr_url": "https://github.com/settings/security",
+    "deepfake_probability": 0.06
+  },
+  {
+    "case_id": "fusion_003_url_qr_phishing_text_legit",
+    "expected_intent": "mixed_phishing_leaning",
+    "url": "https://microsoft-365-password-reset.example.net/secure-login",
+    "email_text": "Hello team, the weekly project status meeting has moved to Thursday at 10:00 AM. Agenda is attached in the internal workspace.",
+    "sms_text": "Reminder: your clinic appointment is tomorrow at 9:30 AM.",
+    "qr_url": "https://microsoft-365-password-reset.example.net/qr-login",
+    "deepfake_probability": 0.15
+  },
+  {
+    "case_id": "fusion_004_text_phishing_url_legit",
+    "expected_intent": "mixed_phishing_leaning",
+    "url": "https://www.microsoft.com/en-us/security",
+    "email_text": "Final notice: your mailbox storage is full. Confirm your email password immediately or your account will be disabled today.",
+    "sms_text": "Your bank card has been blocked. Re-activate your account now and confirm your PIN to prevent permanent suspension.",
+    "qr_url": "https://www.microsoft.com/en-us/security",
+    "deepfake_probability": 0.2
+  },
+  {
+    "case_id": "fusion_005_shortener_sms_only",
+    "expected_intent": "sms_phishing",
+    "url": null,
+    "email_text": null,
+    "sms_text": "Congratulations, you won a 50000 NGN reward. Claim before midnight: https://tinyurl.com/claim-reward-ng",
+    "qr_url": null,
+    "deepfake_probability": null
+  },
+  {
+    "case_id": "fusion_006_deepfake_high_but_other_legit",
+    "expected_intent": "media_risk_mixed",
+    "url": "https://www.linkedin.com",
+    "email_text": "Thanks for connecting. Here is the public company profile we discussed: https://www.linkedin.com/company/example",
+    "sms_text": "Your package delivery is scheduled for today between 2 PM and 4 PM.",
+    "qr_url": "https://www.linkedin.com/company/example",
+    "deepfake_probability": 0.95
+  },
+  {
+    "case_id": "fusion_007_empty_payload_baseline",
+    "expected_intent": "baseline_legitimate",
+    "url": null,
+    "email_text": null,
+    "sms_text": null,
+    "qr_url": null,
+    "deepfake_probability": null
+  },
+  {
+    "case_id": "fusion_008_borderline_mixed",
+    "expected_intent": "borderline",
+    "url": "https://secure-login.example.org/session/verify",
+    "email_text": "Please review the shared document when you have time. No immediate action is required.",
+    "sms_text": "Your one-time code is 391204.",
+    "qr_url": "https://example.org/events/check-in",
+    "deepfake_probability": 0.48
+  }
+]

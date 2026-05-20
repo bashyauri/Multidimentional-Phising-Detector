@@ -10,6 +10,11 @@ if not exist ".venv\Scripts\python.exe" (
   exit /b 1
 )
 
+set "SMS_PREFER_TRANSFORMER=false"
+set "EMAIL_PREFER_TRANSFORMER=false"
+
+echo [INFO] SMS model priority: Logistic Regression first
+echo [INFO] Email model priority: Logistic Regression first
 echo [INFO] Starting Flask app...
 .venv\Scripts\python.exe app.py
 

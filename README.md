@@ -86,6 +86,7 @@ Run all scripts from the project root.
 
 ```bash
 python -m ml_training.train_url --dataset datasets/url_phishing.csv
+python -m ml_training.train_qr --dataset-dir datasets/qr
 python -m ml_training.train_email --dataset datasets/email_phishing.csv
 python -m ml_training.train_sms --dataset datasets/sms_spam.csv
 python -m ml_training.train_deepfake --dataset-dir datasets/faceforensics
@@ -93,6 +94,7 @@ python -m ml_training.train_deepfake --dataset-dir datasets/faceforensics
 
 Artifacts produced:
 - `models/url_model.pkl`
+- `models/qr_model.pkl`
 - `models/email_model.pkl`
 - `models/sms_model.pkl`
 - `models/deepfake_model.pkl`
@@ -102,9 +104,9 @@ Artifacts produced:
 ## QR Code and Deepfake Modules
 
 ### QR Code Detection
-- No separate QR training dataset is required.
-- The app decodes uploaded QR images and extracts embedded text/URL.
-- If a URL is detected, it is classified using the trained URL model.
+- The app can train a QR-specific classifier from image datasets in `datasets/qr`.
+- At inference time, uploaded QR images are decoded and scored with URL risk signals.
+- If `models/qr_model.pkl` is available, the API fuses URL risk with QR-model risk.
 - Supported in UI via the QR upload form and API endpoint `/api/detect/qr`.
 
 ### Deepfake Detection
@@ -170,6 +172,20 @@ python app.py
 ```
 
 Open http://127.0.0.1:5000
+
+### Model Priority Flags
+
+You can switch text-model priority at runtime with environment variables:
+
+```bash
+set SMS_PREFER_TRANSFORMER=true
+set EMAIL_PREFER_TRANSFORMER=false
+python app.py
+```
+
+- `SMS_PREFER_TRANSFORMER=false` by default, so SMS uses Logistic Regression first and falls back to DistilBERT.
+- `EMAIL_PREFER_TRANSFORMER=true` by default, so email uses DistilBERT first and falls back to Logistic Regression.
+- Accepted true values are `1`, `true`, `yes`, and `on`.
 
 ## Features Implemented
 

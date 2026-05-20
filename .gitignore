@@ -12,3 +12,8 @@ datasets/faceforensics/frames/**
 !datasets/faceforensics/original/.gitkeep
 !datasets/faceforensics/manipulated/.gitkeep
 !datasets/faceforensics/frames/.gitkeep
+
+# Large QR image datasets should stay local.
+datasets/qr/**/benign_qr_images_500/**
+datasets/qr/**/malicious_qr_images_500/**
+!datasets/qr/**/.gitkeep

@@ -1,0 +1,26 @@
+{
+  "accuracy": 0.855,
+  "precision": 0.865979381443299,
+  "recall": 0.84,
+  "f1": 0.8527918781725888,
+  "confusion_matrix": [
+    [
+      87,
+      13
+    ],
+    [
+      16,
+      84
+    ]
+  ],
+  "tp": 84,
+  "tn": 87,
+  "fp": 13,
+  "fn": 16,
+  "roc_auc": 0.9164,
+  "model": "XGBoost + QR decode/image features",
+  "dataset": "datasets\\qr",
+  "decoded_rate": 1.0,
+  "samples": 1000,
+  "validation_samples": 160
+}

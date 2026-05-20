@@ -1,25 +1,25 @@
 {
   "url": {
-    "accuracy": 0.9964799932144448,
-    "precision": 0.995562786570034,
-    "recall": 0.9982944011865035,
-    "f1": 0.9969267227015218,
+    "accuracy": 0.9973705973409105,
+    "precision": 0.9956794682422452,
+    "recall": 0.999740452354468,
+    "f1": 0.9977058279370953,
     "confusion_matrix": [
       [
-        20069,
-        120
+        20072,
+        117
       ],
       [
-        46,
-        26924
+        7,
+        26963
       ]
     ],
-    "tp": 26924,
-    "tn": 20069,
-    "fp": 120,
-    "fn": 46,
-    "roc_auc": 0.9985967929356054,
-    "model": "RandomForestClassifier",
+    "tp": 26963,
+    "tn": 20072,
+    "fp": 117,
+    "fn": 7,
+    "roc_auc": 0.9990484608987891,
+    "model": "XGBoost + URL feature engineering",
     "dataset": "datasets\\url_phishing.csv"
   },
   "email": {
@@ -69,32 +69,64 @@
     "dataset": "datasets\\sms_spam.csv"
   },
   "deepfake": {
-    "accuracy": 0.05,
-    "precision": 0.09090909090909091,
-    "recall": 0.1,
-    "f1": 0.09523809523809523,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
     "confusion_matrix": [
       [
         0,
-        10
+        100
       ],
       [
-        9,
-        1
+        0,
+        100
       ]
     ],
-    "tp": 1,
+    "tp": 100,
     "tn": 0,
-    "fp": 10,
-    "fn": 9,
-    "roc_auc": 0.009999999999999998,
-    "model": "RandomForestClassifier",
+    "fp": 100,
+    "fn": 0,
+    "roc_auc": 0.46390000000000003,
+    "model": "EfficientNet-B0 frame classifier",
     "dataset": "datasets\\faceforensics",
     "class_counts": {
-      "0": 50,
-      "1": 50
+      "0": 500,
+      "1": 500
     },
-    "max_frames_per_video": 12,
+    "frames_per_video": 4,
+    "image_size": 160,
+    "pretrained_imagenet": true,
+    "unfreeze_last_blocks": 2,
+    "decision_threshold": 0.1,
+    "validation_split": 0.2,
+    "best_validation_f2": 0.8333333333333334,
     "notes": "Class 0=original/real, class 1=manipulated/deepfake"
+  },
+  "qr": {
+    "accuracy": 0.855,
+    "precision": 0.865979381443299,
+    "recall": 0.84,
+    "f1": 0.8527918781725888,
+    "confusion_matrix": [
+      [
+        87,
+        13
+      ],
+      [
+        16,
+        84
+      ]
+    ],
+    "tp": 84,
+    "tn": 87,
+    "fp": 13,
+    "fn": 16,
+    "roc_auc": 0.9164,
+    "model": "XGBoost + QR decode/image features",
+    "dataset": "datasets\\qr",
+    "decoded_rate": 1.0,
+    "samples": 1000,
+    "validation_samples": 160
   }
 }

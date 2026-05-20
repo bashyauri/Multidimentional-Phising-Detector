@@ -1,18 +1,16 @@
-import hashlib
 import re
 import time
 from datetime import datetime
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, current_app, jsonify, render_template, request
 from sqlalchemy import func
 
 from database.db import db
 from database.models import PredictionLog
 from utils.fusion import weighted_fusion
-from utils.deepfake_features import extract_media_features_from_bytes
 from utils.model_loader import registry
 from utils.preprocessing import clean_text, extract_url_features
-from utils.qr_utils import decode_qr_image
+from utils.qr_features import build_qr_feature_frame, decode_qr_text_from_bytes
 
 
 detection_bp = Blueprint("detection", __name__)
@@ -188,10 +186,12 @@ def _predict_text(text: str, model):
     if not text:
         return "Legitimate", 0.0, 0.0
 
-    cleaned = clean_text(text)
     if model is not None:
-        prob = float(model.predict_proba([cleaned])[0][1])
+        uses_raw_text = getattr(model, "expects_clean_text", True) is False
+        model_input = text if uses_raw_text else clean_text(text)
+        prob = float(model.predict_proba([model_input])[0][1])
     else:
+        cleaned = clean_text(text)
         suspicious_tokens = ["urgent", "click", "verify", "password", "lottery", "bank"]
         hit_count = sum(tok in cleaned for tok in suspicious_tokens)
         prob = min(1.0, 0.2 + hit_count * 0.15)
@@ -213,27 +213,68 @@ def _predict_text(text: str, model):
     return label, confidence, prob
 
 
-def _predict_deepfake(file_bytes: bytes, filename: str):
-    if registry.deepfake_model is not None:
-        try:
-            features = extract_media_features_from_bytes(file_bytes, filename)
-            prob = float(registry.deepfake_model.predict_proba([features])[0][1])
-            prob = min(0.99, max(0.01, prob))
-            label, confidence = _label_from_probability(prob)
-            return label, confidence, prob, "trained_model"
-        except Exception:
-            pass
+def _predict_qr(file_bytes: bytes):
+    decoded_text = decode_qr_text_from_bytes(file_bytes)
 
-    name = (filename or "").lower()
-    if "fake" in name or "deepfake" in name:
-        prob = 0.86
+    url_prob = None
+    if decoded_text:
+        _, _, url_prob = _predict_url(decoded_text)
+
+    qr_prob = None
+    if registry.qr_model is not None:
+        qr_features = build_qr_feature_frame(
+            file_bytes=file_bytes,
+            url_model=registry.url_model,
+            decoded_text=decoded_text,
+        )
+        qr_prob = float(registry.qr_model.predict_proba(qr_features)[0][1])
+
+    if url_prob is None and qr_prob is None:
+        raise RuntimeError("No QR signal available: could not decode QR and no qr_model is loaded.")
+
+    if url_prob is not None and qr_prob is not None:
+        final_prob = 0.7 * url_prob + 0.3 * qr_prob
+        model_status = "url_qr_fusion"
+    elif url_prob is not None:
+        final_prob = url_prob
+        model_status = "url_model_only"
     else:
-        digest = hashlib.sha256(file_bytes).hexdigest()
-        prob = 0.15 + ((int(digest[:4], 16) % 60) / 100)
+        final_prob = qr_prob
+        model_status = "qr_model_only"
 
-    prob = min(0.99, max(0.01, prob))
-    label, confidence = _label_from_probability(prob)
-    return label, confidence, prob, "simulation_fallback"
+    label, confidence = _label_from_probability(final_prob)
+    return label, confidence, float(final_prob), decoded_text, model_status
+
+
+def _select_text_model(task: str):
+    if task == "sms":
+        if current_app.config.get("SMS_PREFER_TRANSFORMER", False):
+            return registry.sms_transformer_model or registry.sms_model
+        return registry.sms_model or registry.sms_transformer_model
+
+    if task == "email":
+        if current_app.config.get("EMAIL_PREFER_TRANSFORMER", True):
+            return registry.email_transformer_model or registry.email_model
+        return registry.email_model or registry.email_transformer_model
+
+    raise ValueError(f"Unsupported text detection task: {task}")
+
+
+def _predict_deepfake(file_bytes: bytes, filename: str):
+    if registry.deepfake_cnn_model is not None:
+        try:
+            prob = float(registry.deepfake_cnn_model.predict_probability(file_bytes, filename))
+            prob = min(0.99, max(0.01, prob))
+            threshold = float(getattr(registry.deepfake_cnn_model, "decision_threshold", 0.5))
+            label = "Phishing" if prob >= threshold else "Legitimate"
+            confidence = prob if label == "Phishing" else 1 - prob
+            return label, confidence, prob, "efficientnet_b0_frame_model"
+        except Exception as exc:
+            raise RuntimeError("Deepfake CNN inference failed for the uploaded media.") from exc
+
+    raise RuntimeError(
+        "Deepfake CNN model is not loaded. Train models/deepfake_efficientnet_b0.pt and reload models."
+    )
 
 
 @detection_bp.route("/")
@@ -266,7 +307,8 @@ def detect_email():
     payload = request.get_json(silent=True) or request.form
     content = str(payload.get("email_text", "")).strip()
 
-    label, confidence, prob = _predict_text(content, registry.email_model)
+    email_model = _select_text_model("email")
+    label, confidence, prob = _predict_text(content, email_model)
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("email", content[:1000], label, confidence, elapsed)
@@ -279,7 +321,8 @@ def detect_sms():
     payload = request.get_json(silent=True) or request.form
     content = str(payload.get("sms_text", "")).strip()
 
-    label, confidence, prob = _predict_text(content, registry.sms_model)
+    sms_model = _select_text_model("sms")
+    label, confidence, prob = _predict_text(content, sms_model)
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("sms", content[:1000], label, confidence, elapsed)
@@ -293,14 +336,16 @@ def detect_qr():
         return jsonify({"error": "No QR file uploaded"}), 400
 
     qr_file = request.files["qr_file"]
-    decoded_text = decode_qr_image(qr_file.stream)
-    if not decoded_text:
-        return jsonify({"error": "Unable to decode QR content"}), 400
+    file_bytes = qr_file.read()
 
-    label, confidence, prob = _predict_url(decoded_text)
+    try:
+        label, confidence, prob, decoded_text, model_status = _predict_qr(file_bytes)
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc), "model_status": "qr_unavailable"}), 503
+
     elapsed = (time.perf_counter() - start) * 1000
 
-    _log_prediction("qr", decoded_text[:1000], label, confidence, elapsed)
+    _log_prediction("qr", (decoded_text or "")[:1000], label, confidence, elapsed)
     return jsonify(
         {
             "source": "qr",
@@ -308,6 +353,7 @@ def detect_qr():
             "label": label,
             "confidence": confidence,
             "phishing_probability": prob,
+            "model_status": model_status,
         }
     )
 
@@ -321,7 +367,11 @@ def detect_deepfake():
     media_file = request.files["media_file"]
     data = media_file.read()
 
-    label, confidence, prob, model_status = _predict_deepfake(data, media_file.filename)
+    try:
+        label, confidence, prob, model_status = _predict_deepfake(data, media_file.filename)
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc), "model_status": "cnn_unavailable"}), 503
+
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("deepfake", media_file.filename or "uploaded_file", label, confidence, elapsed)
@@ -348,11 +398,13 @@ def detect_fusion():
         prediction_probs["url"] = prob
 
     if payload.get("email_text"):
-        _, _, prob = _predict_text(str(payload["email_text"]), registry.email_model)
+        email_model = _select_text_model("email")
+        _, _, prob = _predict_text(str(payload["email_text"]), email_model)
         prediction_probs["email"] = prob
 
     if payload.get("sms_text"):
-        _, _, prob = _predict_text(str(payload["sms_text"]), registry.sms_model)
+        sms_model = _select_text_model("sms")
+        _, _, prob = _predict_text(str(payload["sms_text"]), sms_model)
         prediction_probs["sms"] = prob
 
     if payload.get("qr_url"):

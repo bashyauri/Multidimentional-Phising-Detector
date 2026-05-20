@@ -1,9 +1,9 @@
 import argparse
 from pathlib import Path
 
-import joblib
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+import joblib
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 
 from ml_training.common import evaluate_model, find_column, normalize_label, save_confusion_plot, write_metrics
@@ -52,14 +52,38 @@ def train_url_model(dataset_path: Path):
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 
-    model = RandomForestClassifier(n_estimators=250, random_state=42, class_weight="balanced")
+    try:
+        from xgboost import XGBClassifier
+
+        model = XGBClassifier(
+            n_estimators=450,
+            max_depth=5,
+            learning_rate=0.05,
+            subsample=0.9,
+            colsample_bytree=0.9,
+            eval_metric="logloss",
+            random_state=42,
+            n_jobs=2,
+            tree_method="hist",
+        )
+        model_name = "XGBoost + URL feature engineering"
+    except ImportError:
+        model = HistGradientBoostingClassifier(
+            max_iter=250,
+            learning_rate=0.05,
+            max_leaf_nodes=31,
+            l2_regularization=0.1,
+            random_state=42,
+        )
+        model_name = "HistGradientBoosting fallback + URL feature engineering"
+
     model.fit(x_train, y_train)
 
     y_pred = model.predict(x_test)
     y_prob = model.predict_proba(x_test)[:, 1]
 
     metrics = evaluate_model(y_test, y_pred, y_prob)
-    metrics["model"] = "RandomForestClassifier"
+    metrics["model"] = model_name
     metrics["dataset"] = str(dataset_path)
 
     MODELS_DIR.mkdir(exist_ok=True)
