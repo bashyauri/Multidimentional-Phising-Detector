@@ -224,12 +224,14 @@ def train_deepfake_efficientnet(
             x_batch = torch.tensor(np.stack(frame_rows), dtype=torch.float32, device=device)
             y_batch = torch.tensor(target_rows, dtype=torch.long, device=device)
 
+
             optimizer.zero_grad()
             logits = model(x_batch)
             loss = criterion(logits, y_batch)
             loss.backward()
             optimizer.step()
             losses.append(float(loss.item()))
+            print(f"  Batch {start//batch_size+1}/{(len(order)+batch_size-1)//batch_size} loss={loss.item():.4f}")
 
         scheduler.step()
 
