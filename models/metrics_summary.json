@@ -128,5 +128,81 @@
     "decoded_rate": 1.0,
     "samples": 1000,
     "validation_samples": 160
+  },
+  "deepfake_resnet50": {
+    "accuracy": 0.605,
+    "precision": 0.5853658536585366,
+    "recall": 0.72,
+    "f1": 0.6457399103139013,
+    "confusion_matrix": [
+      [
+        49,
+        51
+      ],
+      [
+        28,
+        72
+      ]
+    ],
+    "tp": 72,
+    "tn": 49,
+    "fp": 51,
+    "fn": 28,
+    "roc_auc": 0.67265,
+    "model": "ResNet-50 deepfake detector",
+    "dataset": "datasets\\faceforensics",
+    "class_counts": {
+      "0": 500,
+      "1": 500
+    },
+    "frames_per_video": 8,
+    "image_size": 160,
+    "decision_threshold": 0.28,
+    "best_validation_auc": 0.731640625,
+    "best_validation_auc_raw": 0.268359375,
+    "best_validation_classification_score": 0.68875,
+    "best_monitor_score": 0.7144843750000001,
+    "threshold_strategy": "max(0.7*F1 + 0.3*balanced_accuracy) over thresholds [0.2, 0.8]",
+    "invert_probability": true,
+    "augmentation": "horizontal_flip + light_brightness_jitter + light_gaussian_noise",
+    "device": "privateuseone:0"
+  },
+  "deepfake_efficientnet_b0": {
+    "accuracy": 0.525,
+    "precision": 0.5263157894736842,
+    "recall": 0.5,
+    "f1": 0.5128205128205128,
+    "confusion_matrix": [
+      [
+        11,
+        9
+      ],
+      [
+        10,
+        10
+      ]
+    ],
+    "tp": 10,
+    "tn": 11,
+    "fp": 9,
+    "fn": 10,
+    "roc_auc": 0.4674999999999999,
+    "model": "EfficientNet-B0 frame classifier",
+    "dataset": "datasets\\faceforensics",
+    "class_counts": {
+      "0": 100,
+      "1": 100
+    },
+    "frames_per_video": 2,
+    "image_size": 128,
+    "face_crop": true,
+    "device": "privateuseone:0",
+    "pretrained_imagenet": true,
+    "unfreeze_last_blocks": 2,
+    "decision_threshold": 0.5,
+    "validation_split": 0.2,
+    "best_validation_score": 0.6561491935483871,
+    "threshold_strategy": "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]",
+    "notes": "Class 0=original/real, class 1=manipulated/deepfake"
   }
 }

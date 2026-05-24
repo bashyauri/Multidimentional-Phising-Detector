@@ -1,0 +1,38 @@
+{
+  "accuracy": 0.605,
+  "precision": 0.5853658536585366,
+  "recall": 0.72,
+  "f1": 0.6457399103139013,
+  "confusion_matrix": [
+    [
+      49,
+      51
+    ],
+    [
+      28,
+      72
+    ]
+  ],
+  "tp": 72,
+  "tn": 49,
+  "fp": 51,
+  "fn": 28,
+  "roc_auc": 0.67265,
+  "model": "ResNet-50 deepfake detector",
+  "dataset": "datasets\\faceforensics",
+  "class_counts": {
+    "0": 500,
+    "1": 500
+  },
+  "frames_per_video": 8,
+  "image_size": 160,
+  "decision_threshold": 0.28,
+  "best_validation_auc": 0.731640625,
+  "best_validation_auc_raw": 0.268359375,
+  "best_validation_classification_score": 0.68875,
+  "best_monitor_score": 0.7144843750000001,
+  "threshold_strategy": "max(0.7*F1 + 0.3*balanced_accuracy) over thresholds [0.2, 0.8]",
+  "invert_probability": true,
+  "augmentation": "horizontal_flip + light_brightness_jitter + light_gaussian_noise",
+  "device": "privateuseone:0"
+}

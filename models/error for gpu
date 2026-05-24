@@ -1,0 +1,12 @@
+C:\laragon\www\Phising\.venv-gpu\Lib\site-packages\torch\optim\adamw.py:380: UserWarning: The operator 'aten::lerp.Scalar_out' is not currently supported on the DML backend and will fall back to run on the CPU. This may have performance implications. (Triggered internally at C:\__w\1\s\pytorch-directml-plugin\torch_directml\csrc\dml\dml_cpu_fallback.cpp:17.)
+  exp_avg.lerp_(grad, 1 - beta1)
+epoch=1/6 loss=0.7299 val_auc=0.7214 raw_auc=0.2786 invert=True
+val prob stats => min=0.4929 max=0.6331 mean=0.5541
+epoch=2/6 loss=0.6962 val_auc=0.7809 raw_auc=0.2191 invert=True
+val prob stats => min=0.3507 max=0.6109 mean=0.4747
+epoch=3/6 loss=0.6785 val_auc=0.7947 raw_auc=0.2053 invert=True
+val prob stats => min=0.3252 max=0.8314 mean=0.5300
+[ WARN:0@5083.154] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 196609.774000 ms
+[ WARN:0@5083.167] global cap_ffmpeg_impl.hpp:453 _opencv_ffmpeg_interrupt_callback Stream timeout triggered after 196644.851000 ms
+[mov,mp4,m4a,3gp,3g2,mj2 @ 00000080423c8000] stream 0, offset 0xce7e2: partial file
+[mov,mp4,m4a,3gp,3g2,mj2 @ 00000080423c8000] stream 0, offset 0xcee5e: partial file

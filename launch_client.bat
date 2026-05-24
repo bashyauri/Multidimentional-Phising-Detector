@@ -23,6 +23,12 @@ if not exist ".venv\Scripts\python.exe" (
   )
 )
 
+set "PYTHON_EXE=.venv\Scripts\python.exe"
+if exist ".venv-gpu\Scripts\python.exe" (
+  set "PYTHON_EXE=.venv-gpu\Scripts\python.exe"
+  echo [INFO] GPU environment detected. Using .venv-gpu for model inference.
+)
+
 set "SMS_PREFER_TRANSFORMER=false"
 set "EMAIL_PREFER_TRANSFORMER=false"
 
@@ -30,7 +36,7 @@ echo [INFO] SMS model priority: Logistic Regression first
 echo [INFO] Email model priority: Logistic Regression first
 echo [INFO] Launching web application...
 start "" http://127.0.0.1:5000
-.venv\Scripts\python.exe app.py
+%PYTHON_EXE% app.py
 
 if errorlevel 1 (
   echo [ERROR] App exited with an error.

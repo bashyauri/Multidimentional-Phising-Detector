@@ -30,7 +30,11 @@ class ModelRegistry:
         self.sms_model = self._safe_load(MODELS_DIR / "sms_model.pkl")
         self.email_transformer_model = self._safe_load_transformer(MODELS_DIR / "email_distilbert")
         self.sms_transformer_model = self._safe_load_transformer(MODELS_DIR / "sms_distilbert")
-        self.deepfake_cnn_model = self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_efficientnet_b0.pt")
+        self.deepfake_cnn_model = (
+            self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_convnext_tiny.pt", "convnext_tiny")
+            or self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_efficientnet_b0.pt", "efficientnet_b0")
+            or self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_resnet50.pt", "resnet50")
+        )
         self.deepfake_model = None
 
         metrics_path = MODELS_DIR / "metrics_summary.json"
@@ -54,11 +58,11 @@ class ModelRegistry:
         return None
 
     @staticmethod
-    def _safe_load_deepfake_cnn(path: Path):
+    def _safe_load_deepfake_cnn(path: Path, architecture: str):
         try:
             if path.exists():
-                return DeepfakeCNNDetector(path)
-        except (FileNotFoundError, DeepfakeCNNUnavailable, OSError, RuntimeError):
+                return DeepfakeCNNDetector(path, architecture=architecture)
+        except Exception:
             return None
         return None
 

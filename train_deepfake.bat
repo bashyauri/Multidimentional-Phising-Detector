@@ -23,8 +23,8 @@ if not exist "datasets\faceforensics\manipulated" (
 )
 
 echo [INFO] Training EfficientNet-B0 Deepfake model from datasets\faceforensics...
-echo [INFO] Fast profile: 4 frames/video, image size 160, max 6 epochs, early stopping enabled.
-.venv\Scripts\python.exe -m ml_training.train_deepfake --dataset-dir datasets/faceforensics --quick --batch-size 2 --epochs 6 --unfreeze-last-blocks 2 --val-split 0.2 --early-stop-patience 2 --pretrained
+echo [INFO] Friendly profile: face crop, 8 frames/video, image size 160, max 15 epochs, early stopping enabled.
+.venv\Scripts\python.exe -m ml_training.train_deepfake --dataset-dir datasets/faceforensics --batch-size 2 --epochs 15 --frames-per-video 8 --image-size 160 --unfreeze-last-blocks 2 --val-split 0.2 --early-stop-patience 4 --pretrained
 if errorlevel 1 goto :train_error
 
 echo [SUCCESS] Deepfake model training complete.

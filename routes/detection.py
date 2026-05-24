@@ -268,12 +268,13 @@ def _predict_deepfake(file_bytes: bytes, filename: str):
             threshold = float(getattr(registry.deepfake_cnn_model, "decision_threshold", 0.5))
             label = "Phishing" if prob >= threshold else "Legitimate"
             confidence = prob if label == "Phishing" else 1 - prob
-            return label, confidence, prob, "efficientnet_b0_frame_model"
+            architecture = getattr(registry.deepfake_cnn_model, "architecture", "cnn")
+            return label, confidence, prob, f"{architecture}_frame_model"
         except Exception as exc:
             raise RuntimeError("Deepfake CNN inference failed for the uploaded media.") from exc
 
     raise RuntimeError(
-        "Deepfake CNN model is not loaded. Train models/deepfake_efficientnet_b0.pt and reload models."
+        "Deepfake CNN model is not loaded. Train models/deepfake_resnet50.pt or models/deepfake_efficientnet_b0.pt and reload models."
     )
 
 

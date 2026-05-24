@@ -6,7 +6,13 @@ from sklearn.metrics import balanced_accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 
 from ml_training.common import evaluate_model, save_confusion_plot, write_metrics
-from utils.deepfake_cnn import build_efficientnet_b0, frames_from_media_path, iter_media_files
+from utils.deepfake_cnn import (
+    build_convnext_tiny,
+    build_efficientnet_b0,
+    frames_from_media_path,
+    iter_media_files,
+    resolve_torch_device,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,13 +36,18 @@ def _collect_media(dataset_dir: Path, max_samples_per_class: int | None):
     return np.array(paths, dtype=object), np.array(labels, dtype=np.int64)
 
 
-def _predict_dataset(model, samples, labels, device, torch, frames_per_video, image_size):
+def _predict_dataset(model, samples, labels, device, torch, frames_per_video, image_size, face_crop):
     y_prob = []
     y_true = []
     model.eval()
     with torch.no_grad():
         for path, label in zip(samples, labels):
-            frames = frames_from_media_path(path, frames_per_video=frames_per_video, image_size=image_size)
+            frames = frames_from_media_path(
+                path,
+                frames_per_video=frames_per_video,
+                image_size=image_size,
+                face_crop=face_crop,
+            )
             batch = torch.tensor(np.stack(frames), dtype=torch.float32, device=device)
             logits = model(batch)
             prob = torch.softmax(logits, dim=1)[:, 1].mean().item()
@@ -47,13 +58,18 @@ def _predict_dataset(model, samples, labels, device, torch, frames_per_video, im
     return np.array(y_true), y_pred, y_prob
 
 
-def _predict_probabilities(model, samples, labels, device, torch, frames_per_video, image_size):
+def _predict_probabilities(model, samples, labels, device, torch, frames_per_video, image_size, face_crop):
     y_prob = []
     y_true = []
     model.eval()
     with torch.no_grad():
         for path, label in zip(samples, labels):
-            frames = frames_from_media_path(path, frames_per_video=frames_per_video, image_size=image_size)
+            frames = frames_from_media_path(
+                path,
+                frames_per_video=frames_per_video,
+                image_size=image_size,
+                face_crop=face_crop,
+            )
             batch = torch.tensor(np.stack(frames), dtype=torch.float32, device=device)
             logits = model(batch)
             prob = torch.softmax(logits, dim=1)[:, 1].mean().item()
@@ -63,15 +79,14 @@ def _predict_probabilities(model, samples, labels, device, torch, frames_per_vid
 
 
 def _find_best_threshold(y_true: np.ndarray, y_prob: np.ndarray) -> tuple[float, float]:
-    # Keep the threshold in a stable range to avoid degenerate all-positive predictions.
-    candidates = np.linspace(0.3, 0.8, 21)
+    candidates = np.linspace(0.2, 0.9, 36)
     best_threshold = 0.5
     best_score = -1.0
     for threshold in candidates:
         y_pred = (y_prob >= threshold).astype(int)
-        f1 = f1_score(y_true, y_pred, zero_division=0)
         bal_acc = balanced_accuracy_score(y_true, y_pred)
-        score = 0.7 * f1 + 0.3 * bal_acc
+        macro_f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
+        score = 0.7 * bal_acc + 0.3 * macro_f1
         if score > best_score:
             best_score = float(score)
             best_threshold = float(threshold)
@@ -90,6 +105,9 @@ def train_deepfake_efficientnet(
     pretrained: bool,
     unfreeze_last_blocks: int,
     skip_if_empty: bool,
+    device_preference: str,
+    face_crop: bool,
+    architecture: str = "efficientnet_b0",
 ) -> int:
     try:
         import torch
@@ -126,8 +144,17 @@ def train_deepfake_efficientnet(
         train_paths, y_train = trainval_paths, y_trainval
         val_paths, y_val = np.array([], dtype=object), np.array([], dtype=np.int64)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = build_efficientnet_b0(num_classes=2, pretrained=pretrained)
+    architecture = architecture.lower()
+    if architecture not in {"efficientnet_b0", "convnext_tiny"}:
+        raise ValueError(f"Unsupported architecture: {architecture}")
+
+    device = resolve_torch_device(torch, device_preference)
+    if architecture == "convnext_tiny":
+        model = build_convnext_tiny(num_classes=2, pretrained=pretrained)
+        model_label = "ConvNeXt-Tiny frame classifier"
+    else:
+        model = build_efficientnet_b0(num_classes=2, pretrained=pretrained)
+        model_label = "EfficientNet-B0 frame classifier"
     model.to(device)
 
     # Keep training laptop-friendly: train classifier + last N feature blocks.
@@ -150,12 +177,17 @@ def train_deepfake_efficientnet(
         for name, p in model.named_parameters()
         if p.requires_grad and not name.startswith("classifier.")
     ]
+    optimizer_kwargs = {"weight_decay": 1e-4}
+    if str(device).startswith("privateuseone"):
+        # DirectML does not fully support foreach optimizer ops; disable them.
+        optimizer_kwargs["foreach"] = False
+
     optimizer = torch.optim.AdamW(
         [
             {"params": backbone_params, "lr": 2e-4},
             {"params": classifier_params, "lr": 1e-3},
         ],
-        weight_decay=1e-4,
+        **optimizer_kwargs,
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs))
 
@@ -184,6 +216,7 @@ def train_deepfake_efficientnet(
                     train_paths[idx],
                     frames_per_video=frames_per_video,
                     image_size=image_size,
+                    face_crop=face_crop,
                 )
                 frame_rows.extend(frames)
                 target_rows.extend([int(y_train[idx])] * len(frames))
@@ -211,6 +244,7 @@ def train_deepfake_efficientnet(
                 torch,
                 frames_per_video,
                 image_size,
+                face_crop,
             )
             val_threshold, val_score = _find_best_threshold(y_val_true, y_val_prob)
             if val_score > best_val_score:
@@ -245,6 +279,7 @@ def train_deepfake_efficientnet(
             torch,
             frames_per_video,
             image_size,
+            face_crop,
         )
         best_threshold, _ = _find_best_threshold(y_tmp_true, y_tmp_prob)
 
@@ -256,51 +291,61 @@ def train_deepfake_efficientnet(
         torch,
         frames_per_video,
         image_size,
+        face_crop,
     )
     y_pred = (y_prob >= best_threshold).astype(int)
     metrics = evaluate_model(y_true, y_pred, y_prob)
-    metrics["model"] = "EfficientNet-B0 frame classifier"
+    metrics["model"] = model_label
     metrics["dataset"] = str(dataset_dir)
     metrics["class_counts"] = class_counts
     metrics["frames_per_video"] = frames_per_video
     metrics["image_size"] = image_size
+    metrics["face_crop"] = bool(face_crop)
+    metrics["device"] = str(device)
     metrics["pretrained_imagenet"] = pretrained
     metrics["unfreeze_last_blocks"] = blocks_to_unfreeze
     metrics["decision_threshold"] = float(best_threshold)
     metrics["validation_split"] = float(val_split if use_validation else 0.0)
     if use_validation:
         metrics["best_validation_score"] = float(best_val_score)
-    metrics["threshold_strategy"] = "max(0.7*F1 + 0.3*balanced_accuracy) over thresholds [0.3, 0.8]"
+    metrics["threshold_strategy"] = "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]"
     metrics["notes"] = "Class 0=original/real, class 1=manipulated/deepfake"
 
     MODELS_DIR.mkdir(exist_ok=True)
-    model_out = MODELS_DIR / "deepfake_efficientnet_b0.pt"
+    is_smoke_run = max_samples_per_class is not None and max_samples_per_class <= 20
+    artifact_suffix = "_smoke" if is_smoke_run else ""
+    model_name = f"deepfake_{architecture}{artifact_suffix}"
+    model_out = MODELS_DIR / f"{model_name}.pt"
     torch.save(
         {
             "model_state_dict": model.state_dict(),
             "frames_per_video": frames_per_video,
             "image_size": image_size,
+            "face_crop": bool(face_crop),
             "decision_threshold": float(best_threshold),
+            "architecture": architecture,
             "class_names": ["original", "manipulated"],
         },
         model_out,
     )
 
-    save_confusion_plot(metrics["confusion_matrix"], "deepfake")
-    write_metrics("deepfake", metrics)
+    save_confusion_plot(metrics["confusion_matrix"], model_name)
+    write_metrics(model_name, metrics)
 
     legacy_model = MODELS_DIR / "deepfake_model.pkl"
     if legacy_model.exists():
         legacy_model.rename(MODELS_DIR / "deepfake_model_legacy_random_forest.pkl")
 
-    print("EfficientNet-B0 deepfake model trained successfully")
+    print(f"{model_label} deepfake model trained successfully")
     print(f"Model saved to: {model_out}")
+    if is_smoke_run:
+        print("[INFO] Smoke-test artifacts were written to separate *_smoke files.")
     print(metrics)
     return 0
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Train EfficientNet-B0 deepfake detector")
+    parser = argparse.ArgumentParser(description="Train an image CNN deepfake detector")
     parser.add_argument("--dataset-dir", type=str, default=str(DATASET_DIR))
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=2)
@@ -311,8 +356,16 @@ def main() -> int:
     parser.add_argument("--max-samples-per-class", type=int, default=None)
     parser.add_argument("--pretrained", action="store_true")
     parser.add_argument("--unfreeze-last-blocks", type=int, default=3)
+    parser.add_argument(
+        "--architecture",
+        type=str,
+        choices=["efficientnet_b0", "convnext_tiny"],
+        default="efficientnet_b0",
+    )
     parser.add_argument("--quick", action="store_true", help="Use faster, laptop-friendly defaults")
+    parser.add_argument("--no-face-crop", action="store_true", help="Disable face-crop preprocessing")
     parser.add_argument("--skip-if-empty", action="store_true")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "dml", "cpu"], default="auto")
     args = parser.parse_args()
 
     epochs = args.epochs
@@ -339,6 +392,9 @@ def main() -> int:
         pretrained=args.pretrained,
         unfreeze_last_blocks=unfreeze_last_blocks,
         skip_if_empty=args.skip_if_empty,
+        device_preference=args.device,
+        face_crop=not args.no_face_crop,
+        architecture=args.architecture,
     )
 
 
