@@ -169,39 +169,39 @@
   },
   "deepfake_efficientnet_b0": {
     "accuracy": 0.525,
-    "precision": 0.5263157894736842,
-    "recall": 0.5,
-    "f1": 0.5128205128205128,
+    "precision": 0.5333333333333333,
+    "recall": 0.4,
+    "f1": 0.45714285714285713,
     "confusion_matrix": [
       [
-        11,
-        9
+        65,
+        35
       ],
       [
-        10,
-        10
+        60,
+        40
       ]
     ],
-    "tp": 10,
-    "tn": 11,
-    "fp": 9,
-    "fn": 10,
-    "roc_auc": 0.4674999999999999,
+    "tp": 40,
+    "tn": 65,
+    "fp": 35,
+    "fn": 60,
+    "roc_auc": 0.5575,
     "model": "EfficientNet-B0 frame classifier",
     "dataset": "datasets\\faceforensics",
     "class_counts": {
-      "0": 100,
-      "1": 100
+      "0": 500,
+      "1": 500
     },
-    "frames_per_video": 2,
-    "image_size": 128,
+    "frames_per_video": 4,
+    "image_size": 160,
     "face_crop": true,
     "device": "privateuseone:0",
     "pretrained_imagenet": true,
     "unfreeze_last_blocks": 2,
-    "decision_threshold": 0.5,
+    "decision_threshold": 0.5800000000000001,
     "validation_split": 0.2,
-    "best_validation_score": 0.6561491935483871,
+    "best_validation_score": 0.5737121212121212,
     "threshold_strategy": "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]",
     "notes": "Class 0=original/real, class 1=manipulated/deepfake"
   }
