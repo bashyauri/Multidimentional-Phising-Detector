@@ -1,25 +1,25 @@
 {
-  "accuracy": 0.525,
-  "precision": 0.5333333333333333,
-  "recall": 0.4,
-  "f1": 0.45714285714285713,
+  "accuracy": 0.805,
+  "precision": 0.8080808080808081,
+  "recall": 0.8,
+  "f1": 0.8040201005025126,
   "confusion_matrix": [
     [
-      65,
-      35
+      81,
+      19
     ],
     [
-      60,
-      40
+      20,
+      80
     ]
   ],
-  "tp": 40,
-  "tn": 65,
-  "fp": 35,
-  "fn": 60,
-  "roc_auc": 0.5575,
+  "tp": 80,
+  "tn": 81,
+  "fp": 19,
+  "fn": 20,
+  "roc_auc": 0.8893,
   "model": "EfficientNet-B0 frame classifier",
-  "dataset": "datasets\\faceforensics",
+  "dataset": "/content/drive/MyDrive/faceforensics",
   "class_counts": {
     "0": 500,
     "1": 500
@@ -27,12 +27,12 @@
   "frames_per_video": 4,
   "image_size": 160,
   "face_crop": true,
-  "device": "privateuseone:0",
+  "device": "cuda",
   "pretrained_imagenet": true,
   "unfreeze_last_blocks": 2,
-  "decision_threshold": 0.5800000000000001,
+  "decision_threshold": 0.52,
   "validation_split": 0.2,
-  "best_validation_score": 0.5737121212121212,
+  "best_validation_score": 0.8498235294117646,
   "threshold_strategy": "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]",
   "notes": "Class 0=original/real, class 1=manipulated/deepfake"
 }
