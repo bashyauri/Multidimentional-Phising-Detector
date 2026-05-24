@@ -1,3 +1,12 @@
+# Ignore Python virtual environments
+.venv/
+.venv-gpu/
+
+# Ignore model weights and large binaries
+models/*.pt
+models/*.pth
+models/*.h5
+models/*.ckpt
 __pycache__/
 *.py[cod]
 .venv/
