@@ -5,6 +5,7 @@ from flask import Flask
 
 from database.db import init_db
 from routes.detection import detection_bp
+from routes.admin import admin_bp
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -29,6 +30,7 @@ def create_app() -> Flask:
     init_db(app)
 
     app.register_blueprint(detection_bp)
+    app.register_blueprint(admin_bp)
 
     return app
 

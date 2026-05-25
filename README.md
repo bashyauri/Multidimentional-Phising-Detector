@@ -211,3 +211,36 @@ python app.py
 - Use real datasets and retrain models before evaluation.
 - If models are retrained while app is running, call `POST /api/reload-models`.
 - For reproducible installs, use `requirements-lock.txt` instead of `requirements.txt`.
+
+## Model Integration and Updating (All Modalities)
+
+### Model File Formats
+- **Deepfake (PyTorch):** `.pt` (e.g., `deepfake_efficientnet_b0.pt`)
+- **URL/QR/Email/SMS (scikit-learn/XGBoost):** `.pkl`
+
+### Adding or Updating Models
+1. Place new or updated model files in the `models/` folder using the correct format and naming convention.
+   - Example: `models/deepfake_efficientnet_b0.pt`, `models/url_model.pkl`, etc.
+2. Place updated metrics files (e.g., `deepfake_efficientnet_b0_metrics.json`) in `models/`.
+3. (Optional) Merge or update `metrics_summary.json` for dashboard analytics.
+4. Regenerate confusion matrix and other plots using the provided scripts (see `update_efficientnet_confusion_matrix.py` for an example).
+5. Use the `/api/reload-models` endpoint or restart the app to reload all models and metrics.
+
+### Training Deepfake Models in Colab
+- You can train deepfake models in Google Colab and download the `.pt` and metrics `.json` files.
+- Copy these files into the `models/` folder as above.
+- The app will use them automatically after reload.
+
+### Consistent Client Experience
+- All detection types (URL, Email, SMS, QR, Deepfake) are available in the web UI and API.
+- The backend automatically selects the correct model for each detection type.
+- All metrics and plots are updated and displayed together for a unified experience.
+
+### Adding New Model Types (e.g., Flax/JAX)
+- Add a loader in `utils/model_loader.py` for the new format.
+- Expose a `predict_probability()` method for the new model.
+- Add a form and endpoint if you want a new UI section.
+
+### Troubleshooting
+- If a model is not detected, check file placement and naming in `models/`.
+- If metrics or plots are outdated, rerun the update scripts and reload models.
