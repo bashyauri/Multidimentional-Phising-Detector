@@ -81,13 +81,15 @@ def main():
         model.train()
         perm = np.random.permutation(len(train_paths))
         train_paths, y_train = train_paths[perm], y_train[perm]
-        for i in range(0, len(train_paths), args.batch_size):
+        num_batches = (len(train_paths) + args.batch_size - 1) // args.batch_size
+        for batch_idx, i in enumerate(range(0, len(train_paths), args.batch_size), 1):
             x_batch, y_batch = make_batch(train_paths[i:i+args.batch_size], y_train[i:i+args.batch_size])
             optimizer.zero_grad()
             logits = model(x_batch)
             loss = criterion(logits, y_batch)
             loss.backward()
             optimizer.step()
+            print(f"epoch={epoch+1}/{args.epochs} batch={batch_idx}/{num_batches} loss={loss.item():.4f}")
         print(f"Epoch {epoch+1}/{args.epochs} done.")
 
     # Validation
