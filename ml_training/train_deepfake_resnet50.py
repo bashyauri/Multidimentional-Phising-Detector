@@ -359,6 +359,9 @@ def train_deepfake_resnet50(
 
             losses.append(float(loss.item()))
 
+            # Batch-level progress output
+            print(f"epoch={epoch+1}/{epochs} batch={(start//batch_size)+1}/{(len(order)+batch_size-1)//batch_size} loss={loss.item():.4f}")
+
             del x_batch, y_batch, logits, loss
 
         scheduler.step()
