@@ -414,29 +414,26 @@ def train_deepfake_resnet50(
         else:
             epochs_without_improvement += 1
 
+
         print(
-            f"epoch={epoch+1}/{epochs} "
-            f"loss={epoch_loss:.4f} "
-            f"val_auc={val_auc:.4f} "
-            f"raw_auc={val_auc_raw:.4f} "
-            f"val_thr={val_threshold:.3f} "
-            f"val_cls={val_cls_score:.4f} "
-            f"invert={invert_probability}"
+            f"epoch={epoch+1}/{epochs} loss={epoch_loss:.4f} "
+            f"val_score={val_cls_score:.4f} val_thr={val_threshold:.3f} "
+            f"val_auc={val_auc:.4f} raw_auc={val_auc_raw:.4f} invert={invert_probability}"
         )
 
-        # Debug probabilities
-        print(
-            f"val prob stats => "
-            f"min={y_val_prob.min():.4f} "
-            f"max={y_val_prob.max():.4f} "
-            f"mean={y_val_prob.mean():.4f}"
-        )
+        # Debug probabilities (optional, comment out if not needed)
+        # print(
+        #     f"val prob stats => "
+        #     f"min={y_val_prob.min():.4f} "
+        #     f"max={y_val_prob.max():.4f} "
+        #     f"mean={y_val_prob.mean():.4f}"
+        # )
 
-        if (
-            early_stop_patience > 0
-            and epochs_without_improvement >= early_stop_patience
-        ):
-            print("[INFO] Early stopping triggered.")
+        if early_stop_patience > 0 and epochs_without_improvement >= early_stop_patience:
+            print(
+                f"[INFO] Early stopping at epoch {epoch + 1}: "
+                f"no validation score improvement for {early_stop_patience} epoch(s)."
+            )
             break
 
     if best_state_dict is not None:
