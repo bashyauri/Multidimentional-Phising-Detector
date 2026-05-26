@@ -1,0 +1,7 @@
+# Ignore all files by default
+*
+# But keep this .gitignore
+!.gitignore
+# Allow README and CSV metadata
+!README.md
+!*.csv

@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.985144312393888,
+  "precision": 0.9798488664987406,
+  "recall": 0.9906621392190152,
+  "f1": 0.9852258336850992,
+  "confusion_matrix": [
+    [
+      1154,
+      24
+    ],
+    [
+      11,
+      1167
+    ]
+  ],
+  "roc_auc": 0.9992177613923631,
+  "model": "RandomForestClassifier",
+  "dataset": "datasets/voice/DATASET-balanced.csv",
+  "test_size": 0.2,
+  "n_estimators": 100
+}

@@ -217,7 +217,7 @@ def train_deepfake_efficientnet_vit(
         "architecture": "efficientnet_vit",
         "class_names": ["original", "manipulated"],
     }, model_out)
-    save_confusion_plot(metrics["confusion_matrix"], "deepfake_efficientnet_vit")
+    # No confusion matrix plot (seaborn disabled)
     write_metrics("deepfake_efficientnet_vit", metrics)
     print("\nTraining completed successfully.")
     print(f"Model saved to: {model_out}")
