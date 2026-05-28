@@ -1,0 +1,69 @@
+{
+  "RandomForest": {
+    "accuracy": 0.8962536023054755,
+    "precision": 0.8950437317784257,
+    "recall": 1.0,
+    "f1": 0.9446153846153846,
+    "confusion_matrix": [
+      [
+        8,
+        72
+      ],
+      [
+        0,
+        614
+      ]
+    ],
+    "roc_auc": 0.5452565146579804,
+    "best_params": {
+      "max_depth": 10,
+      "min_samples_split": 2,
+      "n_estimators": 200
+    },
+    "model": "RandomForest"
+  },
+  "HistGradientBoosting": {
+    "accuracy": 0.9034582132564841,
+    "precision": 0.9027982326951399,
+    "recall": 0.998371335504886,
+    "f1": 0.9481825212683681,
+    "confusion_matrix": [
+      [
+        14,
+        66
+      ],
+      [
+        1,
+        613
+      ]
+    ],
+    "roc_auc": 0.5949307817589577,
+    "best_params": {
+      "max_depth": null,
+      "max_iter": 200
+    },
+    "model": "HistGradientBoosting"
+  },
+  "MLP": {
+    "accuracy": 0.8890489913544669,
+    "precision": 0.9099236641221374,
+    "recall": 0.9706840390879479,
+    "f1": 0.9393223010244287,
+    "confusion_matrix": [
+      [
+        21,
+        59
+      ],
+      [
+        18,
+        596
+      ]
+    ],
+    "roc_auc": 0.5900855048859934,
+    "best_params": {
+      "alpha": 0.0001,
+      "learning_rate_init": 0.001
+    },
+    "model": "MLP"
+  }
+}

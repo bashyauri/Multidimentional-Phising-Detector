@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.8995633187772926,
+  "precision": 0.9013254786450663,
+  "recall": 0.996742671009772,
+  "f1": 0.9466357308584686,
+  "confusion_matrix": [
+    [
+      6,
+      67
+    ],
+    [
+      2,
+      612
+    ]
+  ],
+  "roc_auc": 0.5406719914327787,
+  "model": "RandomForestClassifier",
+  "dataset": "datasets/faceforensics/features_video_combined.csv",
+  "test_size": 0.2,
+  "n_estimators": 100
+}
