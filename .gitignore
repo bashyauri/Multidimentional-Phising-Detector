@@ -1,3 +1,6 @@
+# Ignore large FaceForensics feature files
+datasets/faceforensics/features_video_classical_cnn.csv
+datasets/faceforensics/features_video_combined.csv
 # Ignore all CSV files
 *.csv
 # Ignore Python virtual environments
@@ -28,3 +31,6 @@ datasets/faceforensics/frames/**
 datasets/qr/**/benign_qr_images_500/**
 datasets/qr/**/malicious_qr_images_500/**
 !datasets/qr/**/.gitkeep
+
+datasets/*.csv
+datasets/faceforensics/*.csv
