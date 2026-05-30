@@ -1,0 +1,82 @@
+# Sample test cases for all detection models in the multimodal phishing system
+
+[
+  {
+    "case_id": "test_url_phishing",
+    "url": "http://secure-login-paypal.com/verify",
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_url_legitimate",
+    "url": "https://www.microsoft.com/en-us/security",
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_email_phishing",
+    "email_text": "Your account has been compromised. Click here to reset your password: http://malicious-reset.com",
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_email_legitimate",
+    "email_text": "Your meeting is scheduled for tomorrow at 10am. Please see the attached agenda.",
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_sms_phishing",
+    "sms_text": "BANK ALERT: Your account is locked. Visit http://fakebank-login.com to unlock.",
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_sms_legitimate",
+    "sms_text": "Your OTP for login is 123456. Do not share this code with anyone.",
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_qr_phishing",
+    "qr_url": "http://malicious-qr.com/pay",
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_qr_legitimate",
+    "qr_url": "https://www.github.com/settings/security",
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_voice_phishing",
+    "voice_features": [0.12, 0.34, 0.56, 0.78, 0.91, 0.11, 0.22, 0.33, 0.44, 0.55],
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_voice_legitimate",
+    "voice_features": [0.02, 0.04, 0.06, 0.08, 0.09, 0.01, 0.02, 0.03, 0.04, 0.05],
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_video_phishing",
+    "deepfake_probability": 0.92,
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_video_legitimate",
+    "deepfake_probability": 0.08,
+    "expected_label": "legitimate"
+  },
+  {
+    "case_id": "test_fusion_all_phishing",
+    "url": "http://phish.com",
+    "email_text": "Update your credentials now!",
+    "sms_text": "Your account is at risk. Visit http://phish.com",
+    "qr_url": "http://phish.com/qr",
+    "deepfake_probability": 0.95,
+    "expected_label": "phishing"
+  },
+  {
+    "case_id": "test_fusion_all_legitimate",
+    "url": "https://www.apple.com",
+    "email_text": "Your Apple invoice is attached.",
+    "sms_text": "Your appointment is confirmed.",
+    "qr_url": "https://www.apple.com/support",
+    "deepfake_probability": 0.05,
+    "expected_label": "legitimate"
+  }
+]
