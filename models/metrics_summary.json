@@ -69,39 +69,25 @@
     "dataset": "datasets\\sms_spam.csv"
   },
   "deepfake": {
-    "accuracy": 0.5,
-    "precision": 0.5,
-    "recall": 1.0,
-    "f1": 0.6666666666666666,
+    "accuracy": 0.9034582132564841,
+    "precision": 0.9027982326951399,
+    "recall": 0.998371335504886,
+    "f1": 0.9481825212683681,
     "confusion_matrix": [
-      [
-        0,
-        100
-      ],
-      [
-        0,
-        100
-      ]
+      [14, 66],
+      [1, 613]
     ],
-    "tp": 100,
-    "tn": 0,
-    "fp": 100,
-    "fn": 0,
-    "roc_auc": 0.46390000000000003,
-    "model": "EfficientNet-B0 frame classifier",
-    "dataset": "datasets\\faceforensics",
-    "class_counts": {
-      "0": 500,
-      "1": 500
-    },
-    "frames_per_video": 4,
-    "image_size": 160,
-    "pretrained_imagenet": true,
-    "unfreeze_last_blocks": 2,
-    "decision_threshold": 0.1,
-    "validation_split": 0.2,
-    "best_validation_f2": 0.8333333333333334,
-    "notes": "Class 0=original/real, class 1=manipulated/deepfake"
+    "tp": 613,
+    "tn": 14,
+    "fp": 66,
+    "fn": 1,
+    "roc_auc": 0.5949307817589577,
+    "model": "HistGradientBoosting",
+    "dataset": "datasets/faceforensics/features_video_combined.csv",
+    "best_params": {
+      "max_depth": null,
+      "max_iter": 200
+    }
   },
   "qr": {
     "accuracy": 0.855,
@@ -129,80 +115,23 @@
     "samples": 1000,
     "validation_samples": 160
   },
-  "deepfake_resnet50": {
-    "accuracy": 0.605,
-    "precision": 0.5853658536585366,
-    "recall": 0.72,
-    "f1": 0.6457399103139013,
+  "voice": {
+    "accuracy": 0.985144312393888,
+    "precision": 0.9798488664987406,
+    "recall": 0.9906621392190152,
+    "f1": 0.9852258336850992,
     "confusion_matrix": [
-      [
-        49,
-        51
-      ],
-      [
-        28,
-        72
-      ]
+      [1154, 24],
+      [11, 1167]
     ],
-    "tp": 72,
-    "tn": 49,
-    "fp": 51,
-    "fn": 28,
-    "roc_auc": 0.67265,
-    "model": "ResNet-50 deepfake detector",
-    "dataset": "datasets\\faceforensics",
-    "class_counts": {
-      "0": 500,
-      "1": 500
-    },
-    "frames_per_video": 8,
-    "image_size": 160,
-    "decision_threshold": 0.28,
-    "best_validation_auc": 0.731640625,
-    "best_validation_auc_raw": 0.268359375,
-    "best_validation_classification_score": 0.68875,
-    "best_monitor_score": 0.7144843750000001,
-    "threshold_strategy": "max(0.7*F1 + 0.3*balanced_accuracy) over thresholds [0.2, 0.8]",
-    "invert_probability": true,
-    "augmentation": "horizontal_flip + light_brightness_jitter + light_gaussian_noise",
-    "device": "privateuseone:0"
-  },
-  "deepfake_efficientnet_b0": {
-    "accuracy": 0.525,
-    "precision": 0.5333333333333333,
-    "recall": 0.4,
-    "f1": 0.45714285714285713,
-    "confusion_matrix": [
-      [
-        65,
-        35
-      ],
-      [
-        60,
-        40
-      ]
-    ],
-    "tp": 40,
-    "tn": 65,
-    "fp": 35,
-    "fn": 60,
-    "roc_auc": 0.5575,
-    "model": "EfficientNet-B0 frame classifier",
-    "dataset": "datasets\\faceforensics",
-    "class_counts": {
-      "0": 500,
-      "1": 500
-    },
-    "frames_per_video": 4,
-    "image_size": 160,
-    "face_crop": true,
-    "device": "privateuseone:0",
-    "pretrained_imagenet": true,
-    "unfreeze_last_blocks": 2,
-    "decision_threshold": 0.5800000000000001,
-    "validation_split": 0.2,
-    "best_validation_score": 0.5737121212121212,
-    "threshold_strategy": "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]",
-    "notes": "Class 0=original/real, class 1=manipulated/deepfake"
+    "tp": 1167,
+    "tn": 1154,
+    "fp": 24,
+    "fn": 11,
+    "roc_auc": 0.9992177613923631,
+    "model": "RandomForestClassifier",
+    "dataset": "datasets/voice/DATASET-balanced.csv",
+    "test_size": 0.2,
+    "n_estimators": 100
   }
 }

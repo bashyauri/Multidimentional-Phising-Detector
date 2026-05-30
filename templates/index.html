@@ -1,3 +1,10 @@
+        <div class="card-panel p-3 mt-3">
+            <h2>Voice Deepfake Scan</h2>
+            <form id="voiceForm" enctype="multipart/form-data">
+                <input class="form-control mb-2" type="file" name="voice_file" accept="audio/*" required>
+                <button class="btn btn-action" type="submit">Analyze Voice</button>
+            </form>
+        </div>
 {% extends 'base.html' %}
 
 {% block content %}

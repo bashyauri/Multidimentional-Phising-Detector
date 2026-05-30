@@ -1,3 +1,45 @@
+
+import re
+import time
+from datetime import datetime
+
+from flask import Blueprint, current_app, jsonify, render_template, request
+detection_bp = Blueprint("detection", __name__)
+
+# Voice Deepfake Detection Endpoint
+@detection_bp.route("/api/detect/voice", methods=["POST"])
+def detect_voice():
+    start = time.perf_counter()
+    if "voice_file" not in request.files:
+        return jsonify({"error": "No voice file uploaded"}), 400
+
+    voice_file = request.files["voice_file"]
+    file_bytes = voice_file.read()
+    filename = voice_file.filename
+
+    # Example: Use a pre-trained RandomForest or similar model on extracted features
+    # You must implement extract_voice_features_from_bytes in utils/voice_features.py
+    try:
+        from utils.voice_features import extract_voice_features_from_bytes
+        features = extract_voice_features_from_bytes(file_bytes, filename)
+    except ImportError:
+        return jsonify({"error": "Voice feature extraction not implemented"}), 501
+
+    if not hasattr(registry, "voice_model") or registry.voice_model is None:
+        return jsonify({"error": "Voice model not loaded"}), 503
+
+    prob = float(registry.voice_model.predict_proba([features])[0][1])
+    label = "Phishing" if prob >= 0.5 else "Legitimate"
+    confidence = prob if label == "Phishing" else 1 - prob
+    elapsed = (time.perf_counter() - start) * 1000
+
+    _log_prediction("voice", filename or "uploaded_voice", label, confidence, elapsed)
+    return jsonify({
+        "source": "voice",
+        "label": label,
+        "confidence": confidence,
+        "phishing_probability": prob
+    })
 import re
 import time
 from datetime import datetime

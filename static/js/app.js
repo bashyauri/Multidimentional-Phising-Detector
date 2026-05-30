@@ -191,6 +191,13 @@ async function refreshDashboard() {
 }
 
 function attachHandlers() {
+  document.getElementById("voiceForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const result = await postFormData("/api/detect/voice", formData);
+    showResult(result);
+    refreshDashboard();
+  });
   document.getElementById("urlForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);

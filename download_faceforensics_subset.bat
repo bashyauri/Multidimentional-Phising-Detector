@@ -11,10 +11,10 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo [INFO] This downloads a FaceForensics++ subset into datasets\faceforensics.
-echo [INFO] Target: 500 original videos and 500 Deepfakes videos, c23 compression.
+echo [INFO] Target: 2000 original videos and 2000 Deepfakes videos, c23 compression.
 echo [INFO] You must accept the FaceForensics++ terms shown by the script.
 
-.venv\Scripts\python.exe -m ml_training.download_faceforensics_subset --output-dir datasets/faceforensics --compression c23 --num-videos 500 --server AUTO
+.venv\Scripts\python.exe -m ml_training.download_faceforensics_subset --output-dir datasets/faceforensics --compression c23 --num-videos 2000 --server AUTO
 if errorlevel 1 goto :download_error
 
 echo [SUCCESS] Download complete. Now run train_deepfake.bat

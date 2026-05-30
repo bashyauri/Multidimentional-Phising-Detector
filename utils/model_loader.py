@@ -30,12 +30,23 @@ class ModelRegistry:
         self.sms_model = self._safe_load(MODELS_DIR / "sms_model.pkl")
         self.email_transformer_model = self._safe_load_transformer(MODELS_DIR / "email_distilbert")
         self.sms_transformer_model = self._safe_load_transformer(MODELS_DIR / "sms_distilbert")
+
+        # Load best classical video model (RandomForest)
+        self.deepfake_model = self._safe_load(MODELS_DIR / "deepfake_model_legacy_random_forest.pkl")
+
+        # Load best CNN video model (EfficientNet, fallback to ResNet)
         self.deepfake_cnn_model = (
-            self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_convnext_tiny.pt", "convnext_tiny")
-            or self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_efficientnet_b0.pt", "efficientnet_b0")
+            self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_efficientnet_b0.pt", "efficientnet_b0")
             or self._safe_load_deepfake_cnn(MODELS_DIR / "deepfake_resnet50.pt", "resnet50")
         )
-        self.deepfake_model = None
+
+        # Load best classical voice model (if available)
+        self.voice_model = None
+        for fname in ["voice_model_balanced.pkl", "voice_model.pkl"]:
+            path = MODELS_DIR / fname
+            if path.exists():
+                self.voice_model = self._safe_load(path)
+                break
 
         metrics_path = MODELS_DIR / "metrics_summary.json"
         if metrics_path.exists():
