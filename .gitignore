@@ -1,8 +1,3 @@
-# Ignore large FaceForensics feature files
-datasets/faceforensics/features_video_classical_cnn.csv
-datasets/faceforensics/features_video_combined.csv
-# Ignore all CSV files
-*.csv
 # Ignore Python virtual environments
 .venv/
 .venv-gpu/
@@ -12,12 +7,20 @@ models/*.pt
 models/*.pth
 models/*.h5
 models/*.ckpt
-__pycache__/
-*.py[cod]
-.venv/
+models/*.pkl
+
+# Ignore backup git directories (too large to push)
+backup-Multidimentional-Phising-Detector.git/
 
 # Local database/runtime files
 database/*.db
+
+# Ignore all CSV files (datasets are too large)
+*.csv
+datasets/*.csv
+datasets/faceforensics/*.csv
+datasets/faceforensics/features_video_classical_cnn.csv
+datasets/faceforensics/features_video_combined.csv
 
 # Large licensed deepfake media should stay local.
 datasets/faceforensics/original/**
@@ -32,14 +35,9 @@ datasets/qr/**/benign_qr_images_500/**
 datasets/qr/**/malicious_qr_images_500/**
 !datasets/qr/**/.gitkeep
 
-datasets/*.csv
-datasets/faceforensics/*.csv
-datasets/faceforensics/features_video_classical_cnn.csv
-datasets/faceforensics/features_video_classical_cnn.csv
-datasets/faceforensics/features_video_classical_cnn.csv
-datasets/faceforensics/features_video_combined.csv
-datasets/faceforensics/features_video_classical_cnn.csv
-.gitignore
+# Python cache
+__pycache__/
+*.py[cod]
 
 # Ignore backup git directories
 backup-Multidimentional-Phising-Detector.git/
