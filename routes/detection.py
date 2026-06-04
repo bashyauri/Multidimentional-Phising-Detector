@@ -1,49 +1,8 @@
-
 import re
 import time
 from datetime import datetime
 
-from flask import Blueprint, current_app, jsonify, render_template, request
-detection_bp = Blueprint("detection", __name__)
-
-# Voice Deepfake Detection Endpoint
-@detection_bp.route("/api/detect/voice", methods=["POST"])
-def detect_voice():
-    start = time.perf_counter()
-    if "voice_file" not in request.files:
-        return jsonify({"error": "No voice file uploaded"}), 400
-
-    voice_file = request.files["voice_file"]
-    file_bytes = voice_file.read()
-    filename = voice_file.filename
-
-    # Example: Use a pre-trained RandomForest or similar model on extracted features
-    # You must implement extract_voice_features_from_bytes in utils/voice_features.py
-    try:
-        from utils.voice_features import extract_voice_features_from_bytes
-        features = extract_voice_features_from_bytes(file_bytes, filename)
-    except ImportError:
-        return jsonify({"error": "Voice feature extraction not implemented"}), 501
-
-    if not hasattr(registry, "voice_model") or registry.voice_model is None:
-        return jsonify({"error": "Voice model not loaded"}), 503
-
-    prob = float(registry.voice_model.predict_proba([features])[0][1])
-    label = "Phishing" if prob >= 0.5 else "Legitimate"
-    confidence = prob if label == "Phishing" else 1 - prob
-    elapsed = (time.perf_counter() - start) * 1000
-
-    _log_prediction("voice", filename or "uploaded_voice", label, confidence, elapsed)
-    return jsonify({
-        "source": "voice",
-        "label": label,
-        "confidence": confidence,
-        "phishing_probability": prob
-    })
-import re
-import time
-from datetime import datetime
-
+import pandas as pd
 from flask import Blueprint, current_app, jsonify, render_template, request
 from sqlalchemy import func
 
@@ -51,8 +10,9 @@ from database.db import db
 from database.models import PredictionLog
 from utils.fusion import weighted_fusion
 from utils.model_loader import registry
-from utils.preprocessing import clean_text, extract_url_features
+from utils.preprocessing import clean_text, extract_url_features, resolve_url_redirect
 from utils.qr_features import build_qr_feature_frame, decode_qr_text_from_bytes
+from utils.voice_features import VOICE_FEATURE_COLUMNS, extract_voice_features_from_bytes
 
 
 detection_bp = Blueprint("detection", __name__)
@@ -62,12 +22,13 @@ KNOWN_LEGITIMATE_DOMAINS = {
     "facebook.com", "twitter.com", "linkedin.com", "youtube.com", "instagram.com",
     "stackoverflow.com", "reddit.com", "wikipedia.org", "github.io", "bitbucket.org",
     "gitlab.com", "heroku.com", "vercel.com", "netlify.com", "aws.amazon.com",
+    "paypal.com", "openai.com",
 }
 
 KNOWN_SHORTENER_DOMAINS = {
     "bit.ly", "buff.ly", "cutt.ly", "goo.gl", "is.gd", "lnkd.in", "ow.ly",
     "qr.link", "rebrand.ly", "shorturl.at", "t.co", "tiny.cc", "tinyurl.com",
-    "trib.al", "urly.it", "v.gd",
+    "trib.al", "urly.it", "v.gd", "me-qr.com", "q.me-qr.com", "me-qr.co",
 }
 
 # Educational and government domains (generally legitimate)
@@ -95,13 +56,18 @@ PHISHING_DOMAIN_PATTERNS = [
     r"reset.?password", r"confirm.?email", r"verify.?email", r"activate.?account",
     r"claim.?bonus", r"free.?airtime", r"airtime.?bonus", r"bonus.?win",
     r"free.?data", r"free.?recharge", r"win.?bonus",
+    r"confirm.?billing", r"billing.?update", r"signin.?security", r"security.?check",
 ]
 
 URL_SUSPICIOUS_TOKENS = {
     "account", "airtime", "bank", "bonus", "cash", "claim", "data", "free",
     "gift", "giveaway", "login", "password", "prize", "promo", "recharge",
     "reward", "secure", "update", "verify", "voucher", "win", "winner",
+    "signin", "billing", "unlock", "alert",
 }
+
+# Calibrated on local QR benign/malicious samples to reduce false negatives.
+QR_DECISION_THRESHOLD = 0.42
 
 
 def _label_from_probability(probability: float):
@@ -154,8 +120,60 @@ def _has_phishing_domain_pattern(domain: str) -> bool:
     return False
 
 
+def _count_suspicious_domain_tokens(domain: str) -> int:
+    domain = (domain or "").lower()
+    tokens = [tok for tok in re.split(r"[^a-z0-9]+", domain) if tok]
+    return sum(tok in URL_SUSPICIOUS_TOKENS for tok in tokens)
+
+
 def _is_known_shortener_domain(domain: str) -> bool:
     return any(domain == shortener or domain.endswith(f".{shortener}") for shortener in KNOWN_SHORTENER_DOMAINS)
+
+
+def _is_domain_or_subdomain(domain: str, candidate: str) -> bool:
+    """Return true only for exact domain or true subdomain, not suffix lookalikes."""
+    domain = (domain or "").lower().strip(".")
+    candidate = (candidate or "").lower().strip(".")
+    return bool(domain == candidate or domain.endswith(f".{candidate}"))
+
+
+def _has_brand_bait_domain(domain: str) -> bool:
+    """
+    Detect domains that embed known brand names but are not official brand domains,
+    e.g. secure-login-paypal.com.
+    """
+    domain = (domain or "").lower().strip(".")
+    if not domain:
+        return False
+
+    # Never flag known official domains/subdomains as brand bait.
+    if any(_is_domain_or_subdomain(domain, known) for known in KNOWN_LEGITIMATE_DOMAINS):
+        return False
+
+    host_no_tld = domain.rsplit(".", 1)[0]
+    tokens = [tok for tok in re.split(r"[^a-z0-9]+", host_no_tld) if tok]
+
+    # Explicit brand token with suspicious context is usually bait
+    # (e.g. signin-paypal-security-check.com).
+    for brand in KNOWN_BRANDS:
+        if brand in tokens and len(tokens) > 1:
+            others = [tok for tok in tokens if tok != brand]
+            has_suspicious_context = any(tok in URL_SUSPICIOUS_TOKENS for tok in others)
+            if has_suspicious_context or len(others) >= 2:
+                return True
+
+    # Obfuscated brand spelling (e.g. goog1e) is also suspicious.
+    normalized = (
+        host_no_tld.replace("0", "o")
+        .replace("1", "l")
+        .replace("3", "e")
+        .replace("5", "s")
+        .replace("7", "t")
+    )
+    for brand in KNOWN_BRANDS:
+        if brand in normalized and brand not in host_no_tld:
+            return True
+    return False
 
 
 def _log_prediction(source_type, input_text, label, confidence, response_time_ms, fusion_used=False):
@@ -173,10 +191,11 @@ def _log_prediction(source_type, input_text, label, confidence, response_time_ms
 
 def _predict_url(url: str):
     if not url:
-        return "Legitimate", 0.0, 0.0
+        return "Legitimate", 0.0, 0.0, url
 
-    raw = url.lower()
-    features = extract_url_features(url)
+    resolved_url = resolve_url_redirect(url)
+    raw = resolved_url.lower()
+    features = extract_url_features(resolved_url)
     if registry.url_model is not None:
         expected_columns = list(getattr(registry.url_model, "feature_names_in_", features.columns))
         features = features.reindex(columns=expected_columns, fill_value=0)
@@ -207,12 +226,24 @@ def _predict_url(url: str):
     if _has_phishing_domain_pattern(domain):
         prob = max(prob, 0.72)
 
+    # Unseen phishing domains often combine multiple suspicious tokens in host,
+    # e.g. fakebank-login.com
+    suspicious_domain_hits = _count_suspicious_domain_tokens(domain)
+    if suspicious_domain_hits >= 2:
+        prob = max(prob, 0.76)
+    elif suspicious_domain_hits == 1:
+        prob = max(prob, 0.58)
+
     # Shortened QR links can hide the real destination from offline analysis.
     if _is_known_shortener_domain(domain):
         prob = max(prob, 0.62)
     
-    # Check legitimacy whitelist
-    is_known_legitimate = any(domain.endswith(known) or domain == known for known in KNOWN_LEGITIMATE_DOMAINS)
+    # Check if domain looks like brand-bait phishing (e.g. secure-login-paypal.com)
+    if _has_brand_bait_domain(domain):
+        prob = max(prob, 0.86)
+
+    # Check legitimacy whitelist with strict domain/subdomain matching
+    is_known_legitimate = any(_is_domain_or_subdomain(domain, known) for known in KNOWN_LEGITIMATE_DOMAINS)
     
     # Check educational/government domains
     is_educational_gov = any(domain.endswith(suffix) for suffix in EDUCATIONAL_DOMAIN_SUFFIXES | GOVERNMENT_DOMAIN_SUFFIXES)
@@ -221,7 +252,7 @@ def _predict_url(url: str):
         prob = min(prob * 0.15, 0.25)
 
     label, confidence = _label_from_probability(prob)
-    return label, confidence, prob
+    return label, confidence, prob, resolved_url
 
 
 def _predict_text(text: str, model):
@@ -259,8 +290,14 @@ def _predict_qr(file_bytes: bytes):
     decoded_text = decode_qr_text_from_bytes(file_bytes)
 
     url_prob = None
+    resolved_url = None
     if decoded_text:
-        _, _, url_prob = _predict_url(decoded_text)
+        from utils.qr_features import _normalized_url_candidate
+        normalized_url, is_url = _normalized_url_candidate(decoded_text)
+        if is_url:
+            _, _, url_prob, resolved_url = _predict_url(normalized_url)
+        else:
+            _, _, url_prob, resolved_url = _predict_url(decoded_text)
 
     qr_prob = None
     if registry.qr_model is not None:
@@ -277,15 +314,28 @@ def _predict_qr(file_bytes: bytes):
     if url_prob is not None and qr_prob is not None:
         final_prob = 0.7 * url_prob + 0.3 * qr_prob
         model_status = "url_qr_fusion"
+        fusion_weights = {"url": 0.7, "qr": 0.3}
     elif url_prob is not None:
         final_prob = url_prob
         model_status = "url_model_only"
+        fusion_weights = {"url": 1.0, "qr": 0.0}
     else:
         final_prob = qr_prob
         model_status = "qr_model_only"
+        fusion_weights = {"url": 0.0, "qr": 1.0}
 
-    label, confidence = _label_from_probability(final_prob)
-    return label, confidence, float(final_prob), decoded_text, model_status
+    threshold = QR_DECISION_THRESHOLD
+    label = "Phishing" if final_prob >= threshold else "Legitimate"
+    confidence = final_prob if label == "Phishing" else 1 - final_prob
+    debug = {
+        "decoded_success": bool(decoded_text),
+        "url_probability": None if url_prob is None else float(url_prob),
+        "qr_model_probability": None if qr_prob is None else float(qr_prob),
+        "fused_probability": float(final_prob),
+        "decision_threshold": float(threshold),
+        "fusion_weights": fusion_weights,
+    }
+    return label, confidence, float(final_prob), decoded_text, resolved_url, model_status, debug
 
 
 def _select_text_model(task: str):
@@ -320,6 +370,17 @@ def _predict_deepfake(file_bytes: bytes, filename: str):
     )
 
 
+def _predict_voice(file_bytes: bytes, filename: str):
+    if not hasattr(registry, "voice_model") or registry.voice_model is None:
+        raise RuntimeError("Voice model is not loaded. Train models/voice_model_balanced.pkl and reload models.")
+
+    features = extract_voice_features_from_bytes(file_bytes, filename)
+    feature_frame = pd.DataFrame([features], columns=VOICE_FEATURE_COLUMNS)
+    prob = float(registry.voice_model.predict_proba(feature_frame)[0][1])
+    label, confidence = _label_from_probability(prob)
+    return label, confidence, prob
+
+
 @detection_bp.route("/")
 def home():
     return render_template("index.html", current_time=datetime.utcnow())
@@ -337,11 +398,18 @@ def detect_url():
     payload = request.get_json(silent=True) or request.form
     url = str(payload.get("url", "")).strip()
 
-    label, confidence, prob = _predict_url(url)
+    label, confidence, prob, resolved_url = _predict_url(url)
     elapsed = (time.perf_counter() - start) * 1000
 
-    _log_prediction("url", url, label, confidence, elapsed)
-    return jsonify({"source": "url", "label": label, "confidence": confidence, "phishing_probability": prob})
+    log_text = f"{url} -> {resolved_url}" if resolved_url != url else url
+    _log_prediction("url", log_text[:1000], label, confidence, elapsed)
+    return jsonify({
+        "source": "url",
+        "label": label,
+        "confidence": confidence,
+        "phishing_probability": prob,
+        "resolved_url": resolved_url
+    })
 
 
 @detection_bp.route("/api/detect/email", methods=["POST"])
@@ -382,21 +450,24 @@ def detect_qr():
     file_bytes = qr_file.read()
 
     try:
-        label, confidence, prob, decoded_text, model_status = _predict_qr(file_bytes)
+        label, confidence, prob, decoded_text, resolved_url, model_status, debug = _predict_qr(file_bytes)
     except RuntimeError as exc:
         return jsonify({"error": str(exc), "model_status": "qr_unavailable"}), 503
 
     elapsed = (time.perf_counter() - start) * 1000
 
-    _log_prediction("qr", (decoded_text or "")[:1000], label, confidence, elapsed)
+    log_text = f"{decoded_text} -> {resolved_url}" if (resolved_url and resolved_url != decoded_text) else (decoded_text or "")
+    _log_prediction("qr", log_text[:1000], label, confidence, elapsed)
     return jsonify(
         {
             "source": "qr",
             "decoded_url": decoded_text,
+            "resolved_url": resolved_url,
             "label": label,
             "confidence": confidence,
             "phishing_probability": prob,
             "model_status": model_status,
+            "qr_debug": debug,
         }
     )
 
@@ -429,6 +500,34 @@ def detect_deepfake():
     )
 
 
+@detection_bp.route("/api/detect/voice", methods=["POST"])
+def detect_voice():
+    start = time.perf_counter()
+    if "voice_file" not in request.files:
+        return jsonify({"error": "No voice file uploaded"}), 400
+
+    voice_file = request.files["voice_file"]
+    data = voice_file.read()
+
+    try:
+        label, confidence, prob = _predict_voice(data, voice_file.filename)
+    except Exception as exc:
+        return jsonify({"error": str(exc), "model_status": "voice_unavailable"}), 503
+
+    elapsed = (time.perf_counter() - start) * 1000
+
+    _log_prediction("voice", voice_file.filename or "uploaded_voice", label, confidence, elapsed)
+    return jsonify(
+        {
+            "source": "voice",
+            "label": label,
+            "confidence": confidence,
+            "phishing_probability": prob,
+            "model_status": "trained_model",
+        }
+    )
+
+
 @detection_bp.route("/api/detect/fusion", methods=["POST"])
 def detect_fusion():
     start = time.perf_counter()
@@ -437,7 +536,7 @@ def detect_fusion():
     prediction_probs = {}
 
     if payload.get("url"):
-        _, _, prob = _predict_url(str(payload["url"]))
+        _, _, prob, _ = _predict_url(str(payload["url"]))
         prediction_probs["url"] = prob
 
     if payload.get("email_text"):
@@ -451,11 +550,21 @@ def detect_fusion():
         prediction_probs["sms"] = prob
 
     if payload.get("qr_url"):
-        _, _, prob = _predict_url(str(payload["qr_url"]))
+        _, _, prob, _ = _predict_url(str(payload["qr_url"]))
         prediction_probs["qr"] = prob
 
+
+    # Add deepfake (video) probability
     if payload.get("deepfake_probability") is not None:
         prediction_probs["deepfake"] = float(payload["deepfake_probability"])
+
+    # Add voice (audio) probability
+    if payload.get("voice_probability") is not None:
+        prediction_probs["voice"] = float(payload["voice_probability"])
+
+    # Add image probability if present (for future extensibility)
+    if payload.get("image_probability") is not None:
+        prediction_probs["image"] = float(payload["image_probability"])
 
     final_label, final_prob = weighted_fusion(prediction_probs)
     confidence = final_prob if final_label == "Phishing" else 1 - final_prob
@@ -463,6 +572,10 @@ def detect_fusion():
     elapsed = (time.perf_counter() - start) * 1000
     _log_prediction("fusion", str(payload)[:1000], final_label, confidence, elapsed, fusion_used=True)
 
+    # Add explicit audio, video, and image fields for downstream use
+    audio_prob = prediction_probs.get("voice")
+    video_prob = prediction_probs.get("deepfake")
+    image_prob = prediction_probs.get("image")
     return jsonify(
         {
             "source": "fusion",
@@ -470,6 +583,9 @@ def detect_fusion():
             "confidence": confidence,
             "phishing_probability": final_prob,
             "individual_predictions": prediction_probs,
+            "audio": audio_prob,
+            "video": video_prob,
+            "image": image_prob,
         }
     )
 

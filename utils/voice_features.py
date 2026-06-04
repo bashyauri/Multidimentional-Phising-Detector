@@ -2,29 +2,40 @@ import numpy as np
 import librosa
 import io
 
+VOICE_FEATURE_COLUMNS = [
+    "chroma_stft", "rms", "spectral_centroid", "spectral_bandwidth",
+    "rolloff", "zero_crossing_rate",
+    *[f"mfcc{i}" for i in range(1, 21)],
+]
+
+
 def extract_voice_features_from_bytes(file_bytes, filename=None):
     """
-    Extracts features from raw audio bytes for voice deepfake detection.
-    Returns a 1D numpy array of features suitable for classical ML models.
+    Extract features matching datasets/voice/DATASET-balanced.csv.
     """
-    # Load audio from bytes
     y, sr = librosa.load(io.BytesIO(file_bytes), sr=16000, mono=True)
-    # Pad/trim to 3 seconds
+
     target_len = 3 * sr
     if len(y) < target_len:
         y = np.pad(y, (0, target_len - len(y)))
     else:
         y = y[:target_len]
-    # Feature extraction (MFCCs, Chroma, Spectral Contrast, Tonnetz)
-    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+
     chroma = librosa.feature.chroma_stft(y=y, sr=sr)
-    contrast = librosa.feature.spectral_contrast(y=y, sr=sr)
-    tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
-    # Aggregate (mean, std)
-    features = np.concatenate([
-        mfcc.mean(axis=1), mfcc.std(axis=1),
-        chroma.mean(axis=1), chroma.std(axis=1),
-        contrast.mean(axis=1), contrast.std(axis=1),
-        tonnetz.mean(axis=1), tonnetz.std(axis=1)
-    ])
-    return features
+    rms = librosa.feature.rms(y=y)
+    spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
+    spectral_bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)
+    rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr)
+    zero_crossing_rate = librosa.feature.zero_crossing_rate(y)
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+
+    features = [
+        float(np.mean(chroma)),
+        float(np.mean(rms)),
+        float(np.mean(spectral_centroid)),
+        float(np.mean(spectral_bandwidth)),
+        float(np.mean(rolloff)),
+        float(np.mean(zero_crossing_rate)),
+        *[float(np.mean(row)) for row in mfcc],
+    ]
+    return np.array(features, dtype=np.float32)

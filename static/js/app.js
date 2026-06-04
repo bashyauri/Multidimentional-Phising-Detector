@@ -253,10 +253,35 @@ function attachHandlers() {
         email_text: formData.get("email_text") || null,
         sms_text: formData.get("sms_text") || null,
         qr_url: formData.get("qr_url") || null,
-        deepfake_probability: formData.get("deepfake_probability")
-          ? Number(formData.get("deepfake_probability"))
-          : null,
       };
+
+      // Handle video (deepfake) upload
+      const mediaFile = formData.get("fusion_media_file");
+      if (mediaFile && mediaFile.size > 0) {
+        const mediaForm = new FormData();
+        mediaForm.append("media_file", mediaFile);
+        const deepfakeRes = await postFormData(
+          "/api/detect/deepfake",
+          mediaForm,
+        );
+        if (
+          deepfakeRes &&
+          typeof deepfakeRes.phishing_probability === "number"
+        ) {
+          payload.deepfake_probability = deepfakeRes.phishing_probability;
+        }
+      }
+
+      // Handle audio (voice) upload
+      const voiceFile = formData.get("fusion_voice_file");
+      if (voiceFile && voiceFile.size > 0) {
+        const voiceForm = new FormData();
+        voiceForm.append("voice_file", voiceFile);
+        const voiceRes = await postFormData("/api/detect/voice", voiceForm);
+        if (voiceRes && typeof voiceRes.phishing_probability === "number") {
+          payload.voice_probability = voiceRes.phishing_probability;
+        }
+      }
 
       const result = await postJson("/api/detect/fusion", payload);
       showResult(result);

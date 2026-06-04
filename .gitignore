@@ -34,3 +34,14 @@ datasets/qr/**/malicious_qr_images_500/**
 
 datasets/*.csv
 datasets/faceforensics/*.csv
+datasets/faceforensics/features_video_classical_cnn.csv
+datasets/faceforensics/features_video_classical_cnn.csv
+datasets/faceforensics/features_video_classical_cnn.csv
+datasets/faceforensics/features_video_combined.csv
+datasets/faceforensics/features_video_classical_cnn.csv
+.gitignore
+
+# Ignore backup git directories
+backup-Multidimentional-Phising-Detector.git/
+# Ignore pickle models
+models/*.pkl

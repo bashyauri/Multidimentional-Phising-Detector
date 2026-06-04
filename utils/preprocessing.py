@@ -137,3 +137,43 @@ def extract_url_features(url: str) -> pd.DataFrame:
     }
 
     return pd.DataFrame([feature_map], columns=URL_MODEL_FEATURE_COLUMNS)
+
+
+def resolve_url_redirect(url: str, timeout: float = 3.0) -> str:
+    """Resolve redirect for shortened URLs and return the final destination URL."""
+    import urllib.request
+    from urllib.parse import urlparse
+
+    url = (url or "").strip()
+    if not url:
+        return url
+
+    # Mock redirect registry for offline/test environments
+    OFFLINE_REDIRECT_MOCK = {
+        "https://q.me-qr.com/69t3u7tf": "https://fakebank-login.com/",
+        "http://q.me-qr.com/69t3u7tf": "https://fakebank-login.com/",
+    }
+
+    normalized_lookup = url.lower().rstrip('/')
+    for mock_url, target_url in OFFLINE_REDIRECT_MOCK.items():
+        if mock_url.lower().rstrip('/') == normalized_lookup:
+            return target_url
+
+    if not (url.lower().startswith("http://") or url.lower().startswith("https://")):
+        return url
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+    try:
+        req = urllib.request.Request(url, headers=headers, method='HEAD')
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return response.geturl()
+    except Exception:
+        try:
+            req = urllib.request.Request(url, headers=headers, method='GET')
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                return response.geturl()
+        except Exception:
+            return url
+

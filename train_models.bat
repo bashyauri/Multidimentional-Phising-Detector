@@ -52,6 +52,16 @@ echo [INFO] Training SMS model...
 .venv\Scripts\python.exe -m ml_training.train_sms --dataset datasets/sms_spam.csv
 if errorlevel 1 goto :train_error
 
+if exist "datasets\voice\DATASET-balanced.csv" (
+  echo [INFO] Training Voice Deepfake model from datasets\voice\DATASET-balanced.csv...
+  .venv\Scripts\python.exe ml_training\train_voice_deepfake_balanced.py
+  if errorlevel 1 (
+    echo [WARN] Voice deepfake training failed; continuing with other models.
+  )
+) else (
+  echo [WARN] Skipping voice deepfake training: datasets\voice\DATASET-balanced.csv not found.
+)
+
 echo [INFO] Checking deep learning dependencies for deepfake training...
 .venv\Scripts\python.exe -c "import torch, torchvision" >nul 2>nul
 if errorlevel 1 (

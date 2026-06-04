@@ -1,10 +1,3 @@
-        <div class="card-panel p-3 mt-3">
-            <h2>Voice Deepfake Scan</h2>
-            <form id="voiceForm" enctype="multipart/form-data">
-                <input class="form-control mb-2" type="file" name="voice_file" accept="audio/*" required>
-                <button class="btn btn-action" type="submit">Analyze Voice</button>
-            </form>
-        </div>
 {% extends 'base.html' %}
 
 {% block content %}
@@ -56,15 +49,41 @@
         </div>
 
         <div class="card-panel p-3 mt-3">
-            <h2>Multimodal Fusion</h2>
-            <form id="fusionForm">
-                <input class="form-control mb-2" type="url" name="url" placeholder="Optional URL">
-                <textarea class="form-control mb-2" name="email_text" rows="3" placeholder="Optional email text"></textarea>
-                <textarea class="form-control mb-2" name="sms_text" rows="2" placeholder="Optional SMS text"></textarea>
-                <input class="form-control mb-2" type="url" name="qr_url" placeholder="Optional decoded QR URL">
-                <input class="form-control mb-2" type="number" step="0.01" min="0" max="1" name="deepfake_probability" placeholder="Optional deepfake probability (0-1)">
-                <button class="btn btn-action" type="submit">Run Fusion Decision</button>
+            <h2>Voice Deepfake Scan</h2>
+            <form id="voiceForm" enctype="multipart/form-data">
+                <input class="form-control mb-2" type="file" name="voice_file" accept="audio/*" required>
+                <button class="btn btn-action" type="submit">Analyze Voice</button>
             </form>
+        </div>
+
+        <div class="card-panel p-3 mt-3">
+            <h2>Multimodal Fusion</h2>
+                        <form id="fusionForm" enctype="multipart/form-data">
+                                <label class="form-label mt-2">URL (optional)</label>
+                                <input class="form-control mb-2" type="url" name="url" placeholder="e.g. https://example.com">
+
+                                <label class="form-label mt-2">Email Text (optional)</label>
+                                <textarea class="form-control mb-2" name="email_text" rows="3" placeholder="Paste email content"></textarea>
+
+                                <label class="form-label mt-2">SMS Text (optional)</label>
+                                <textarea class="form-control mb-2" name="sms_text" rows="2" placeholder="Paste SMS text"></textarea>
+
+                                <label class="form-label mt-2">QR Code Image (optional)</label>
+                                <input class="form-control mb-2" type="file" name="qr_url" accept="image/*">
+
+                                <div class="row g-2">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label mt-2">Video/Image for Deepfake Detection (optional)</label>
+                                        <input class="form-control mb-2" type="file" name="fusion_media_file" accept="video/*,image/*">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label mt-2">Audio for Voice Deepfake Detection (optional)</label>
+                                        <input class="form-control mb-2" type="file" name="fusion_voice_file" accept="audio/*">
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-action mt-2" type="submit">Run Fusion Decision</button>
+                        </form>
         </div>
     </div>
 
