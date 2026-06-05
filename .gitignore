@@ -33,6 +33,7 @@ datasets/faceforensics/frames/**
 # Large QR image datasets should stay local.
 datasets/qr/**/benign_qr_images_500/**
 datasets/qr/**/malicious_qr_images_500/**
+datasets/qrcode/**
 !datasets/qr/**/.gitkeep
 
 # Python cache
