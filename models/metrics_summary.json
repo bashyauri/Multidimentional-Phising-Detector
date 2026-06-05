@@ -20,7 +20,7 @@
     "fn": 7,
     "roc_auc": 0.9990484608987891,
     "model": "XGBoost + URL feature engineering",
-    "dataset": "datasets\\url_phishing.csv"
+    "dataset": "C:\\laragon\\www\\Phising\\datasets\\qr\\PhiUSIIL_Phishing_URL_Dataset.csv"
   },
   "email": {
     "accuracy": 0.992976631336994,

@@ -100,6 +100,6 @@ def train_url_model(dataset_path: Path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train URL phishing detection model")
-    parser.add_argument("--dataset", type=str, default=str(DATASETS_DIR / "url_phishing.csv"))
+    parser.add_argument("--dataset", type=str, default=str(DATASETS_DIR / "qr" / "PhiUSIIL_Phishing_URL_Dataset.csv"))
     args = parser.parse_args()
     train_url_model(Path(args.dataset))

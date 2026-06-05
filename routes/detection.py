@@ -63,11 +63,12 @@ URL_SUSPICIOUS_TOKENS = {
     "account", "airtime", "bank", "bonus", "cash", "claim", "data", "free",
     "gift", "giveaway", "login", "password", "prize", "promo", "recharge",
     "reward", "secure", "update", "verify", "voucher", "win", "winner",
-    "signin", "billing", "unlock", "alert",
+    "signin", "billing", "unlock", "alert", "malicious", "phishing", "phish",
+    "scam", "fake", "fraud", "hack", "steal", "stolen", "illegal", "criminal",
 }
 
-# Calibrated on local QR benign/malicious samples to reduce false negatives.
-QR_DECISION_THRESHOLD = 0.42
+# Standard binary classification threshold (0.5) for consistency with _label_from_probability
+QR_DECISION_THRESHOLD = 0.5
 
 
 def _label_from_probability(probability: float):
@@ -312,9 +313,16 @@ def _predict_qr(file_bytes: bytes):
         raise RuntimeError("No QR signal available: could not decode QR and no qr_model is loaded.")
 
     if url_prob is not None and qr_prob is not None:
-        final_prob = 0.7 * url_prob + 0.3 * qr_prob
-        model_status = "url_qr_fusion"
-        fusion_weights = {"url": 0.7, "qr": 0.3}
+        # If URL probability is high (>0.5), it should dominate for security
+        # QR visual model analyzes image patterns, not domain content
+        if url_prob >= 0.5:
+            final_prob = url_prob
+            model_status = "url_qr_fusion_url_dominant"
+            fusion_weights = {"url": 1.0, "qr": 0.0}
+        else:
+            final_prob = 0.7 * url_prob + 0.3 * qr_prob
+            model_status = "url_qr_fusion"
+            fusion_weights = {"url": 0.7, "qr": 0.3}
     elif url_prob is not None:
         final_prob = url_prob
         model_status = "url_model_only"
