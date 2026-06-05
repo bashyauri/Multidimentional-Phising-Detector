@@ -1,38 +1,38 @@
 {
-  "accuracy": 0.805,
-  "precision": 0.8080808080808081,
-  "recall": 0.8,
-  "f1": 0.8040201005025126,
+  "accuracy": 0.835,
+  "precision": 0.8722222222222222,
+  "recall": 0.785,
+  "f1": 0.8263157894736842,
   "confusion_matrix": [
     [
-      81,
-      19
+      177,
+      23
     ],
     [
-      20,
-      80
+      43,
+      157
     ]
   ],
-  "tp": 80,
-  "tn": 81,
-  "fp": 19,
-  "fn": 20,
-  "roc_auc": 0.8893,
+  "tp": 157,
+  "tn": 177,
+  "fp": 23,
+  "fn": 43,
+  "roc_auc": 0.9210250000000001,
   "model": "EfficientNet-B0 frame classifier",
-  "dataset": "/content/drive/MyDrive/faceforensics",
+  "dataset": "C:\\laragon\\www\\Phising\\datasets\\faceforensics",
   "class_counts": {
-    "0": 500,
-    "1": 500
+    "0": 1000,
+    "1": 1000
   },
   "frames_per_video": 4,
   "image_size": 160,
   "face_crop": true,
-  "device": "cuda",
+  "device": "cpu",
   "pretrained_imagenet": true,
   "unfreeze_last_blocks": 2,
-  "decision_threshold": 0.52,
+  "decision_threshold": 0.44,
   "validation_split": 0.2,
-  "best_validation_score": 0.8498235294117646,
+  "best_validation_score": 0.8468530076648004,
   "threshold_strategy": "max(0.7*balanced_accuracy + 0.3*macro_F1) over thresholds [0.2, 0.9]",
   "notes": "Class 0=original/real, class 1=manipulated/deepfake"
 }
