@@ -1,2 +1,3 @@
 # Ignore all CSV files in datasets and subfolders
 datasets/**/*.csv
+datasets/

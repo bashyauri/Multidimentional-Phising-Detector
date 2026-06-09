@@ -59,50 +59,107 @@ body {
 }
 
 .card-panel h2 {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.02em;
+}
+
+.card-panel h2::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 1.25rem;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+    margin-right: 0.75rem;
+    border-radius: 2px;
+}
+
+.form-label {
+    color: #e2e8f0;
     font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
 }
 
 .form-control {
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.38);
     color: #fff;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
 }
 
 .form-control:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.2);
-    background: rgba(15, 23, 42, 0.9);
+    box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
+    background: rgba(15, 23, 42, 0.95);
     color: #fff;
 }
 
 .btn-action {
     width: 100%;
     border: none;
-    color: #111827;
+    color: #0f172a;
     font-weight: 700;
     background: linear-gradient(90deg, var(--accent), #fbbf24);
+    padding: 0.65rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
 }
 
 .btn-action:hover {
     background: linear-gradient(90deg, #f59e0b, #facc15);
-    color: #111827;
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .result-box {
     min-height: 120px;
-    background: rgba(2, 6, 23, 0.8);
-    border: 1px solid rgba(20, 184, 166, 0.35);
+    background: rgba(2, 6, 23, 0.85);
+    border: 1px solid rgba(20, 184, 166, 0.45);
     border-radius: 10px;
-    padding: 0.8rem;
-    color: #86efac;
-    font-family: "IBM Plex Mono", monospace;
+    padding: 1rem;
+    color: #a7f3d0; /* bright pastel emerald green */
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
     white-space: pre-wrap;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
 }
 
 .table {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
+.table th {
+    color: #94a3b8 !important; /* slate-400 */
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0.75rem 0.5rem;
+}
+
+.table td {
+    font-size: 0.9rem;
+    color: #e2e8f0 !important; /* slate-200 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 0.75rem 0.5rem;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 @keyframes reveal {

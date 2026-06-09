@@ -1,3 +1,35 @@
+// Configure Chart.js globally for high contrast dark-mode readability
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.color = '#e2e8f0'; // slate-200 (tick labels, general text)
+  Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.12)'; // subtle grid lines
+  Chart.defaults.font.family = "'Space Grotesk', system-ui, -apple-system, sans-serif";
+  Chart.defaults.font.size = 12;
+
+  // Customizing Legends
+  Chart.defaults.plugins.legend.labels.color = '#cbd5e1'; // slate-300
+  Chart.defaults.plugins.legend.labels.boxWidth = 15;
+  Chart.defaults.plugins.legend.labels.font = {
+    family: "'Space Grotesk', system-ui, -apple-system, sans-serif",
+    size: 13,
+    weight: '600'
+  };
+
+  // Customizing Tooltips
+  Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+  Chart.defaults.plugins.tooltip.titleFont = {
+    family: "'Space Grotesk', system-ui, -apple-system, sans-serif",
+    size: 13,
+    weight: '700'
+  };
+  Chart.defaults.plugins.tooltip.bodyColor = '#f1f5f9'; // slate-100
+  Chart.defaults.plugins.tooltip.bodyFont = {
+    family: "'Space Grotesk', system-ui, -apple-system, sans-serif",
+    size: 12
+  };
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 6;
+}
+
 const charts = {};
 
 function showResult(payload) {
