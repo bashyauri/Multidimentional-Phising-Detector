@@ -34,7 +34,66 @@ const charts = {};
 
 function showResult(payload) {
   const box = document.getElementById("resultBox");
-  box.textContent = JSON.stringify(payload, null, 2);
+  
+  // Create a more readable display instead of raw JSON
+  let html = '';
+  
+  if (payload.prediction_label) {
+    const isPhishing = payload.prediction_label === 'Phishing';
+    const confidence = payload.confidence ? (payload.confidence * 100).toFixed(2) : 'N/A';
+    const probability = payload.phishing_probability !== undefined ? (payload.phishing_probability * 100).toFixed(2) : confidence;
+    
+    html += `<div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: ${isPhishing ? 'rgba(230, 57, 70, 0.15)' : 'rgba(67, 97, 238, 0.15)'}; border: 2px solid ${isPhishing ? '#e63946' : '#4361ee'};">`;
+    html += `<h3 style="color: ${isPhishing ? '#e63946' : '#4361ee'}; margin: 0 0 10px 0;">${payload.prediction_label}</h3>`;
+    html += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">`;
+    html += `<div><strong>Confidence:</strong> ${confidence}%</div>`;
+    html += `<div><strong>Probability:</strong> ${probability}%</div>`;
+    
+    if (payload.response_time_ms) {
+      html += `<div><strong>Response Time:</strong> ${payload.response_time_ms.toFixed(2)} ms</div>`;
+    }
+    
+    if (payload.source_type) {
+      html += `<div><strong>Source:</strong> ${payload.source_type}</div>`;
+    }
+    
+    html += `</div></div>`;
+  }
+  
+  // Show additional details
+  if (payload.debug) {
+    html += `<div style="padding: 15px; border-radius: 8px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3);">`;
+    html += `<h4 style="margin: 0 0 10px 0; color: #ffd700;">Debug Information</h4>`;
+    
+    if (payload.debug.url_probability !== undefined) {
+      html += `<div><strong>URL Probability:</strong> ${(payload.debug.url_probability * 100).toFixed(2)}%</div>`;
+    }
+    if (payload.debug.qr_model_probability !== undefined) {
+      html += `<div><strong>QR Model Probability:</strong> ${(payload.debug.qr_model_probability * 100).toFixed(2)}%</div>`;
+    }
+    if (payload.debug.fused_probability !== undefined) {
+      html += `<div><strong>Fused Probability:</strong> ${(payload.debug.fused_probability * 100).toFixed(2)}%</div>`;
+    }
+    if (payload.debug.decision_threshold !== undefined) {
+      html += `<div><strong>Decision Threshold:</strong> ${payload.debug.decision_threshold}</div>`;
+    }
+    if (payload.debug.model_status) {
+      html += `<div><strong>Model Status:</strong> ${payload.debug.model_status}</div>`;
+    }
+    if (payload.debug.fusion_weights) {
+      html += `<div><strong>Fusion Weights:</strong> URL: ${payload.debug.fusion_weights.url || 0}, QR: ${payload.debug.fusion_weights.qr || 0}</div>`;
+    }
+    
+    html += `</div>`;
+  }
+  
+  // Show raw JSON for debugging (collapsible)
+  html += `<details style="margin-top: 10px;">`;
+  html += `<summary style="cursor: pointer; color: #94a3b8; font-size: 12px;">Show Raw JSON</summary>`;
+  html += `<pre style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 11px; overflow-x: auto;">${JSON.stringify(payload, null, 2)}</pre>`;
+  html += `</details>`;
+  
+  box.innerHTML = html;
 }
 
 async function postJson(url, data) {
@@ -222,7 +281,121 @@ async function refreshDashboard() {
   updateRecentTable(data.recent_logs);
 }
 
+function detectInputType(content) {
+  // URL detection
+  if (content.match(/^https?:\/\/[^\s]+$/i)) {
+    return "url";
+  }
+  
+  // Email detection (contains @, has email-like structure)
+  if (content.includes("@") && content.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    return "email";
+  }
+  
+  // SMS detection (short text, typically < 160 chars)
+  if (content.length < 160 && !content.includes("@")) {
+    return "sms";
+  }
+  
+  // Default to email for longer text
+  return "email";
+}
+
 function attachHandlers() {
+  // Handle input type selection change
+  document.getElementById("inputType").addEventListener("change", (e) => {
+    const inputType = e.target.value;
+    const textContainer = document.getElementById("textInputContainer");
+    const fileContainer = document.getElementById("fileInputContainer");
+    const fileInput = document.getElementById("fileInput");
+    
+    if (inputType === "auto") {
+      // Auto-detect mode - show text input by default
+      textContainer.style.display = "block";
+      fileContainer.style.display = "none";
+    } else if (["qr", "deepfake", "voice"].includes(inputType)) {
+      // File-based inputs
+      textContainer.style.display = "none";
+      fileContainer.style.display = "block";
+      
+      // Update file accept attribute
+      if (inputType === "qr") {
+        fileInput.accept = "image/*";
+      } else if (inputType === "deepfake") {
+        fileInput.accept = "video/*,image/*";
+      } else if (inputType === "voice") {
+        fileInput.accept = "audio/*";
+      }
+    } else {
+      // Text-based inputs
+      textContainer.style.display = "block";
+      fileContainer.style.display = "none";
+    }
+  });
+
+  // Unified form handler
+  document.getElementById("unifiedForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const inputType = formData.get("input_type");
+    const textContent = formData.get("text_content");
+    const fileContent = formData.get("file_content");
+    
+    let result;
+    
+    if (inputType === "auto") {
+      // Auto-detect based on content
+      if (fileContent && fileContent.size > 0) {
+        // File-based auto-detection
+        const fileType = fileContent.type;
+        if (fileType.startsWith("image/")) {
+          result = await postFormData("/api/detect/qr", formData);
+        } else if (fileType.startsWith("video/")) {
+          result = await postFormData("/api/detect/deepfake", formData);
+        } else if (fileType.startsWith("audio/")) {
+          result = await postFormData("/api/detect/voice", formData);
+        } else {
+          showResult({ error: "Unsupported file type" });
+          return;
+        }
+      } else if (textContent) {
+        // Text-based auto-detection
+        const detectedType = detectInputType(textContent);
+        if (detectedType === "url") {
+          result = await postJson("/api/detect/url", { url: textContent });
+        } else if (detectedType === "email") {
+          result = await postJson("/api/detect/email", { email_text: textContent });
+        } else if (detectedType === "sms") {
+          result = await postJson("/api/detect/sms", { sms_text: textContent });
+        }
+      } else {
+        showResult({ error: "Please provide text or file content" });
+        return;
+      }
+    } else if (inputType === "url") {
+      result = await postJson("/api/detect/url", { url: textContent });
+    } else if (inputType === "email") {
+      result = await postJson("/api/detect/email", { email_text: textContent });
+    } else if (inputType === "sms") {
+      result = await postJson("/api/detect/sms", { sms_text: textContent });
+    } else if (inputType === "qr") {
+      const qrFormData = new FormData();
+      qrFormData.append("qr_file", fileContent);
+      result = await postFormData("/api/detect/qr", qrFormData);
+    } else if (inputType === "deepfake") {
+      const deepfakeFormData = new FormData();
+      deepfakeFormData.append("media_file", fileContent);
+      result = await postFormData("/api/detect/deepfake", deepfakeFormData);
+    } else if (inputType === "voice") {
+      const voiceFormData = new FormData();
+      voiceFormData.append("voice_file", fileContent);
+      result = await postFormData("/api/detect/voice", voiceFormData);
+    }
+    
+    showResult(result);
+    refreshDashboard();
+  });
+
   document.getElementById("voiceForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);

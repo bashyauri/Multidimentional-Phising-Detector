@@ -1,0 +1,133 @@
+================================================================================
+FUSION VS INDIVIDUAL MODALITY COMPARISON REPORT
+================================================================================
+
+Test Case: Phishing URL + Phishing Email
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Phishing (probability: 0.9400)
+  EMAIL: Phishing (probability: 0.8855)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.9173
+
+Comparison Metrics:
+  Agreement Rate: 100.00%
+  Matches Majority: True
+
+Test Case: Legitimate URL + Legitimate Email
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Legitimate (probability: 0.0180)
+  EMAIL: Phishing (probability: 0.5679)
+
+Fusion Result:
+  Label: Legitimate
+  Probability: 0.2471
+
+Comparison Metrics:
+  Agreement Rate: 50.00%
+  Matches Majority: False
+
+Test Case: Phishing URL + Legitimate SMS
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Phishing (probability: 0.7800)
+  SMS: Legitimate (probability: 0.4341)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.6542
+
+Comparison Metrics:
+  Agreement Rate: 50.00%
+  Matches Majority: True
+
+Test Case: Phishing Email + Phishing SMS
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  EMAIL: Phishing (probability: 0.7719)
+  SMS: Legitimate (probability: 0.4957)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.6492
+
+Comparison Metrics:
+  Agreement Rate: 50.00%
+  Matches Majority: True
+
+Test Case: Mixed Signals (Phishing URL + Legitimate Email)
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Phishing (probability: 0.6200)
+  EMAIL: Legitimate (probability: 0.3976)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.5274
+
+Comparison Metrics:
+  Agreement Rate: 50.00%
+  Matches Majority: True
+
+Test Case: Three Modalities - All Phishing
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Phishing (probability: 0.7600)
+  EMAIL: Phishing (probability: 0.8592)
+  SMS: Legitimate (probability: 0.3843)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.6971
+
+Comparison Metrics:
+  Agreement Rate: 66.67%
+  Matches Majority: True
+
+Test Case: Three Modalities - All Legitimate
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Legitimate (probability: 0.0180)
+  EMAIL: Legitimate (probability: 0.0773)
+  SMS: Legitimate (probability: 0.1468)
+
+Fusion Result:
+  Label: Legitimate
+  Probability: 0.0687
+
+Comparison Metrics:
+  Agreement Rate: 100.00%
+  Matches Majority: True
+
+Test Case: Three Modalities - Mixed Signals
+--------------------------------------------------------------------------------
+
+Individual Modality Results:
+  URL: Legitimate (probability: 0.3000)
+  EMAIL: Phishing (probability: 0.8687)
+  SMS: Phishing (probability: 0.6136)
+
+Fusion Result:
+  Label: Phishing
+  Probability: 0.5561
+
+Comparison Metrics:
+  Agreement Rate: 66.67%
+  Matches Majority: True
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+Total Test Cases: 8
+Fusion Matches Majority: 7/8 (87.50%)
+Average Agreement Rate: 66.67%

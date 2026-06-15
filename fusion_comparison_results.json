@@ -1,0 +1,353 @@
+[
+  {
+    "test_case": "Phishing URL + Phishing Email",
+    "individual_results": {
+      "url": {
+        "confidence": 0.94,
+        "label": "Phishing",
+        "phishing_probability": 0.94,
+        "resolved_url": "http://secure-login-verify-account.com/login",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.8855103210860427,
+        "label": "Phishing",
+        "phishing_probability": 0.8855103210860427,
+        "source": "email"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.9172959671191844,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.8855103210860427,
+        "url": 0.94
+      },
+      "phishing_probability": 0.9172959671191844,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.9172959671191844,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "url": 0.94,
+        "email": 0.8855103210860427
+      },
+      "agreement_rate": 1.0,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Legitimate URL + Legitimate Email",
+    "individual_results": {
+      "url": {
+        "confidence": 0.982,
+        "label": "Legitimate",
+        "phishing_probability": 0.018,
+        "resolved_url": "https://github.com",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.5679264627645776,
+        "label": "Phishing",
+        "phishing_probability": 0.5679264627645776,
+        "source": "email"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.7528639738480927,
+      "final_label": "Legitimate",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.5679264627645776,
+        "url": 0.018
+      },
+      "phishing_probability": 0.24713602615190733,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.24713602615190733,
+      "fusion_label": "Legitimate",
+      "individual_probabilities": {
+        "url": 0.018,
+        "email": 0.5679264627645776
+      },
+      "agreement_rate": 0.5,
+      "matches_majority": false
+    }
+  },
+  {
+    "test_case": "Phishing URL + Legitimate SMS",
+    "individual_results": {
+      "url": {
+        "confidence": 0.78,
+        "label": "Phishing",
+        "phishing_probability": 0.78,
+        "resolved_url": "http://banking-secure-update.com/verify",
+        "source": "url"
+      },
+      "sms": {
+        "confidence": 0.5659001322209373,
+        "label": "Legitimate",
+        "phishing_probability": 0.43409986777906273,
+        "source": "sms"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.6542181337378409,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "sms": 0.43409986777906273,
+        "url": 0.78
+      },
+      "phishing_probability": 0.6542181337378409,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.6542181337378409,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "url": 0.78,
+        "sms": 0.43409986777906273
+      },
+      "agreement_rate": 0.5,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Phishing Email + Phishing SMS",
+    "individual_results": {
+      "email": {
+        "confidence": 0.7718825335668541,
+        "label": "Phishing",
+        "phishing_probability": 0.7718825335668541,
+        "source": "email"
+      },
+      "sms": {
+        "confidence": 0.5042541380051335,
+        "label": "Legitimate",
+        "phishing_probability": 0.4957458619948665,
+        "source": "sms"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.6491551239793041,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.7718825335668541,
+        "sms": 0.4957458619948665
+      },
+      "phishing_probability": 0.6491551239793041,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.6491551239793041,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "email": 0.7718825335668541,
+        "sms": 0.4957458619948665
+      },
+      "agreement_rate": 0.5,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Mixed Signals (Phishing URL + Legitimate Email)",
+    "individual_results": {
+      "url": {
+        "confidence": 0.62,
+        "label": "Phishing",
+        "phishing_probability": 0.62,
+        "resolved_url": "http://phishing-site.com/login",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.6023508646421284,
+        "label": "Legitimate",
+        "phishing_probability": 0.3976491353578716,
+        "source": "email"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.5273538063991132,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.3976491353578716,
+        "url": 0.62
+      },
+      "phishing_probability": 0.5273538063991132,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.5273538063991132,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "url": 0.62,
+        "email": 0.3976491353578716
+      },
+      "agreement_rate": 0.5,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Three Modalities - All Phishing",
+    "individual_results": {
+      "url": {
+        "confidence": 0.76,
+        "label": "Phishing",
+        "phishing_probability": 0.76,
+        "resolved_url": "http://fake-banking-verify.com",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.8592056542157344,
+        "label": "Phishing",
+        "phishing_probability": 0.8592056542157344,
+        "source": "email"
+      },
+      "sms": {
+        "confidence": 0.6156677375898421,
+        "label": "Legitimate",
+        "phishing_probability": 0.38433226241015794,
+        "source": "sms"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.6970848325449565,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.8592056542157344,
+        "sms": 0.38433226241015794,
+        "url": 0.76
+      },
+      "phishing_probability": 0.6970848325449565,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.6970848325449565,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "url": 0.76,
+        "email": 0.8592056542157344,
+        "sms": 0.38433226241015794
+      },
+      "agreement_rate": 0.6666666666666666,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Three Modalities - All Legitimate",
+    "individual_results": {
+      "url": {
+        "confidence": 0.982,
+        "label": "Legitimate",
+        "phishing_probability": 0.018,
+        "resolved_url": "https://www.microsoft.com",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.9227167812470471,
+        "label": "Legitimate",
+        "phishing_probability": 0.07728321875295283,
+        "source": "email"
+      },
+      "sms": {
+        "confidence": 0.8532441057357778,
+        "label": "Legitimate",
+        "phishing_probability": 0.14675589426422217,
+        "source": "sms"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.9312850205736467,
+      "final_label": "Legitimate",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.07728321875295283,
+        "sms": 0.14675589426422217,
+        "url": 0.018
+      },
+      "phishing_probability": 0.0687149794263533,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.0687149794263533,
+      "fusion_label": "Legitimate",
+      "individual_probabilities": {
+        "url": 0.018,
+        "email": 0.07728321875295283,
+        "sms": 0.14675589426422217
+      },
+      "agreement_rate": 1.0,
+      "matches_majority": true
+    }
+  },
+  {
+    "test_case": "Three Modalities - Mixed Signals",
+    "individual_results": {
+      "url": {
+        "confidence": 0.7,
+        "label": "Legitimate",
+        "phishing_probability": 0.3,
+        "resolved_url": "http://suspicious-site.com",
+        "source": "url"
+      },
+      "email": {
+        "confidence": 0.8687367529613481,
+        "label": "Phishing",
+        "phishing_probability": 0.8687367529613481,
+        "source": "email"
+      },
+      "sms": {
+        "confidence": 0.6135816319013414,
+        "label": "Phishing",
+        "phishing_probability": 0.6135816319013414,
+        "source": "sms"
+      }
+    },
+    "fusion_result": {
+      "audio": null,
+      "confidence": 0.5561256432757566,
+      "final_label": "Phishing",
+      "image": null,
+      "individual_predictions": {
+        "email": 0.8687367529613481,
+        "sms": 0.6135816319013414,
+        "url": 0.3
+      },
+      "phishing_probability": 0.5561256432757566,
+      "source": "fusion",
+      "video": null
+    },
+    "comparison": {
+      "fusion_probability": 0.5561256432757566,
+      "fusion_label": "Phishing",
+      "individual_probabilities": {
+        "url": 0.3,
+        "email": 0.8687367529613481,
+        "sms": 0.6135816319013414
+      },
+      "agreement_rate": 0.6666666666666666,
+      "matches_majority": true
+    }
+  }
+]
