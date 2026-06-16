@@ -1,13 +1,15 @@
 # A Machine Learning-Based Multimodal Approach for Detection and Prevention of Emerging Phishing Attacks
 
-This repository contains an academic Flask prototype that trains and deploys multimodal phishing detectors for URL, Email, SMS, QR, and Deepfake media streams. It includes model training scripts, a weighted fusion layer, SQLite logging, and a dashboard with performance and operational analytics.
+This repository contains an academic Flask prototype that trains and deploys multimodal phishing detectors for URL, Email, SMS, QR, Deepfake, and Voice deepfake media streams. It includes model training scripts, a weighted fusion layer, SQLite logging, and a dashboard with performance and operational analytics.
 
 ## Technology Stack
 - Flask
 - scikit-learn
+- XGBoost
 - pandas / numpy
 - NLTK (text preprocessing)
 - OpenCV / pyzbar (QR decoding)
+- PyTorch (deepfake detection)
 - SQLite (via Flask-SQLAlchemy)
 - Chart.js + Bootstrap
 
@@ -21,226 +23,519 @@ project/
 |   |-- url_model.pkl
 |   |-- email_model.pkl
 |   |-- sms_model.pkl
-|   |-- deepfake_model.pkl
+|   |-- qr_model.pkl
+|   |-- deepfake_efficientnet_b0.pt
+|   |-- voice_model.pkl
 |   |-- metrics_summary.json
 |
 |-- ml_training/
 |   |-- train_url.py
 |   |-- train_email.py
 |   |-- train_sms.py
-|   |-- train_deepfake.py
+|   |-- train_qr.py
+|   |-- train_deepfake_efficientnet.py
+|   |-- train_voice_deepfake_balanced.py
 |   |-- common.py
 |
 |-- routes/
 |   |-- detection.py
 |
 |-- templates/
+|   |-- index.html
+|
 |-- static/
+|   |-- css/
+|   |   |-- style.css
+|   |-- js/
+|   |   |-- app.js
+|
 |-- utils/
+|   |-- fusion.py
+|   |-- model_loader.py
+|   |-- qr_features.py
+|
 |-- datasets/
+|   |-- url_phishing.csv
+|   |-- email_phishing.csv
+|   |-- sms_spam.csv
+|   |-- qr/
+|   |-- faceforensics/
+|   |-- voice/
+|
 |-- database/
+|-- MODEL_DECISIONS_AND_RATIONALE.md
 ```
 
-## Client Laptop Quick Start (Windows)
+## System Requirements
 
-1. Install Python 3.13+ from python.org and ensure "Add Python to PATH" is enabled.
-2. Put this project folder on the laptop.
-3. Double-click `launch_client.bat`.
-4. On first run, setup is automatic; later runs start the app directly.
-5. (Optional) double-click `create_desktop_shortcut.bat` to add a desktop launcher.
-6. (Optional for model training) add datasets in `datasets/` as described in `datasets/README.md`.
+- **Python**: 3.10 or higher (3.13+ recommended)
+- **Operating System**: Windows 10/11, Linux, or macOS
+- **RAM**: Minimum 8GB (16GB recommended for deepfake training)
+- **Storage**: Minimum 10GB free space (50GB+ for deepfake datasets)
+- **GPU**: Optional (NVIDIA GPU with CUDA for faster deepfake training)
 
-### One-Click Files for Non-Technical Users
+## Installation Guide
 
-- `launch_client.bat`: one command flow (setup if needed + run app)
-- `create_desktop_shortcut.bat`: creates "Phishing Research App" shortcut on Desktop
-- `setup_client.bat`: manual first-time setup only
-- `run_client.bat`: manual run only
-- `validate_datasets.bat`: validates dataset files and required columns
-- `train_models.bat`: model training workflow
+### Windows Installation (Recommended)
 
-## Setup (Manual)
+#### Option 1: One-Click Installation (Non-Technical Users)
 
-1. Create and activate virtual environment
+1. Install Python 3.13+ from [python.org](https://www.python.org/downloads/)
+   - During installation, **check "Add Python to PATH"**
+   - Select "Install for all users" (optional but recommended)
 
-```bash
-python -m venv .venv
-.venv\\Scripts\\activate
-```
+2. Download/clone this repository to your computer
 
-2. Install dependencies
+3. Double-click `launch_client.bat`
+   - First run: Automatically sets up virtual environment and installs dependencies
+   - Subsequent runs: Starts the application directly
 
-```bash
-pip install -r requirements.txt
-```
+4. (Optional) Double-click `create_desktop_shortcut.bat` to add a desktop launcher
 
-3. Add datasets to `datasets/` (see `datasets/README.md`).
+#### Option 2: Manual Installation (Technical Users)
 
-## Train Models
+1. **Install Python 3.13+**
+   ```bash
+   # Download from https://www.python.org/downloads/
+   # Ensure "Add Python to PATH" is checked during installation
+   python --version  # Verify installation
+   ```
 
-Fast option on Windows: double-click `train_models.bat`.
+2. **Clone or Download Repository**
+   ```bash
+   git clone https://github.com/bashyauri/Multidimentional-Phising-Detector.git
+   cd Multidimentional-Phising-Detector
+   ```
 
-Recommended before training: double-click `validate_datasets.bat`.
+3. **Create Virtual Environment**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
 
-Run all scripts from the project root.
+4. **Install Dependencies**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
 
+5. **Verify Installation**
+   ```bash
+   python -c "import flask; import sklearn; import torch; print('Dependencies OK')"
+   ```
+
+### Linux/macOS Installation
+
+1. **Install Python 3.10+**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt update
+   sudo apt install python3.10 python3.10-venv python3-pip
+
+   # macOS (using Homebrew)
+   brew install python@3.10
+   ```
+
+2. **Clone Repository**
+   ```bash
+   git clone https://github.com/bashyauri/Multidimentional-Phising-Detector.git
+   cd Multidimentional-Phising-Detector
+   ```
+
+3. **Create Virtual Environment**
+   ```bash
+   python3.10 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+4. **Install Dependencies**
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+5. **Verify Installation**
+   ```bash
+   python -c "import flask; import sklearn; import torch; print('Dependencies OK')"
+   ```
+
+## Dataset Setup
+
+### Required Datasets
+
+The application requires datasets for training models. Place datasets in the `datasets/` directory:
+
+**CSV Datasets**:
+- `datasets/url_phishing.csv` - URL phishing dataset
+- `datasets/email_phishing.csv` - Email phishing dataset  
+- `datasets/sms_spam.csv` - SMS spam dataset
+
+**Image/Video Datasets**:
+- `datasets/qr/benign_qr_images_500/` - Benign QR code images
+- `datasets/qr/malicious_qr_images_500/` - Malicious QR code images
+- `datasets/faceforensics/original/` - Real face videos/images
+- `datasets/faceforensics/manipulated/` - Deepfake videos/images
+- `datasets/voice/DATASET-balanced.csv` - Voice deepfake dataset
+
+### Dataset Sources
+
+**URL Phishing**:
+- PhiUSIIL Phishing URL Dataset: https://www.kaggle.com/datasets/anshulmehta1603/phiusiil-phishing-url-dataset
+- Kaggle Phishing Website Dataset: https://www.kaggle.com/datasets/akashkr/phishing-website-dataset
+
+**Email Phishing**:
+- Phishing Email Dataset: https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset
+- Enron Email Dataset: https://www.kaggle.com/datasets/wcukierski/enron-email-dataset
+
+**SMS Spam**:
+- UCI SMS Spam Collection: https://archive.ics.uci.edu/dataset/228/sms+spam+collection
+
+**QR Codes**:
+- Generate using `ml_training/generate_qr_from_phiusiil.py` script
+
+**Deepfake**:
+- FaceForensics++: https://github.com/ondyari/FaceForensics
+- Run `download_faceforensics_subset.bat` to download a subset
+
+**Voice Deepfake**:
+- Various voice deepfake datasets available on Kaggle
+
+### Dataset Preparation
+
+1. **Download datasets** from the sources above
+2. **Rename files** to match expected names:
+   - URL dataset → `url_phishing.csv`
+   - Email dataset → `email_phishing.csv`
+   - SMS dataset → `sms_spam.csv`
+3. **Place files** in `datasets/` directory
+4. **Validate datasets**:
+   ```bash
+   python validate_datasets.py
+   # Or double-click validate_datasets.bat on Windows
+   ```
+
+### Dataset Column Requirements
+
+**URL Dataset** (`url_phishing.csv`):
+- Required columns: URL features (63 columns), label column
+- Label values: 0 (legitimate), 1 (phishing)
+
+**Email Dataset** (`email_phishing.csv`):
+- Required columns: email text, label
+- Label values: 0 (legitimate), 1 (phishing)
+
+**SMS Dataset** (`sms_spam.csv`):
+- Required columns: SMS text, label
+- Label values: ham (legitimate), spam (phishing)
+
+## Model Training
+
+### Quick Training (Windows)
+
+Double-click `train_models.bat` to train all models sequentially.
+
+### Manual Training
+
+**Train URL Model**:
 ```bash
 python -m ml_training.train_url --dataset datasets/url_phishing.csv
-python -m ml_training.train_qr --dataset-dir datasets/qr
+```
+
+**Train Email Model**:
+```bash
 python -m ml_training.train_email --dataset datasets/email_phishing.csv
+```
+
+**Train SMS Model**:
+```bash
 python -m ml_training.train_sms --dataset datasets/sms_spam.csv
-python -m ml_training.train_deepfake --dataset-dir datasets/faceforensics
 ```
 
-Artifacts produced:
-- `models/url_model.pkl`
-- `models/qr_model.pkl`
-- `models/email_model.pkl`
-- `models/sms_model.pkl`
-- `models/deepfake_model.pkl`
-- `models/metrics_summary.json`
-- confusion matrix images in `static/plots/`
+**Train QR Model**:
+```bash
+python -m ml_training.train_qr --dataset-dir datasets/qr
+```
 
-## QR Code and Deepfake Modules
-
-### QR Code Detection
-- The app can train a QR-specific classifier from image datasets in `datasets/qr`.
-- At inference time, uploaded QR images are decoded and scored with URL risk signals.
-- If `models/qr_model.pkl` is available, the API fuses URL risk with QR-model risk.
-- Supported in UI via the QR upload form and API endpoint `/api/detect/qr`.
-
-### Deepfake Detection
-- Put FaceForensics++ real/original samples in `datasets/faceforensics/original/`.
-- Put fake/manipulated samples in `datasets/faceforensics/manipulated/`.
-- Train with `train_deepfake.bat` or:
-
+**Train Deepfake Model**:
 ```bash
 python -m ml_training.train_deepfake --dataset-dir datasets/faceforensics
 ```
 
-- The web app uses `models/deepfake_model.pkl` automatically when it exists.
-- If no trained deepfake model exists, the endpoint falls back to the old simulated score so the demo remains usable.
-- Supported in UI via media upload and API endpoint `/api/detect/deepfake`.
-- Fusion endpoint can also accept manual deepfake probability input.
-
-## How to Get Datasets
-
-Place CSV files in `datasets/` using the expected names:
-- `datasets/url_phishing.csv`
-- `datasets/email_phishing.csv`
-- `datasets/sms_spam.csv`
-- `datasets/faceforensics/original/`
-- `datasets/faceforensics/manipulated/`
-
-Recommended sources:
-- URL phishing:
-  - Kaggle Phishing Website Dataset: https://www.kaggle.com/datasets/akashkr/phishing-website-dataset
-  - UCI Phishing Websites: https://archive.ics.uci.edu/dataset/327/phishing+websites
-- Email phishing:
-  - Enron Email Dataset (Kaggle): https://www.kaggle.com/datasets/wcukierski/enron-email-dataset
-  - Phishing Email Dataset (Kaggle): https://www.kaggle.com/datasets/naserabdullahalam/phishing-email-dataset
-- SMS phishing/spam:
-  - UCI SMS Spam Collection: https://archive.ics.uci.edu/dataset/228/sms+spam+collection
-- Deepfake:
-  - FaceForensics++: https://github.com/ondyari/FaceForensics
-
-Practical workflow:
-1. Download dataset CSV files from Kaggle/UCI.
-2. Create/prepare 3 CSV files and rename them exactly as:
-  - `url_phishing.csv`
-  - `email_phishing.csv`
-  - `sms_spam.csv`
-3. Ensure each CSV has a text/URL column and a label column.
-4. Copy all 3 files into `datasets/`.
-5. For deepfake training, place FaceForensics++ real samples in `original/` and fake samples in `manipulated/`.
-   You can also run `download_faceforensics_subset.bat` to download a small `c23` subset directly into those folders.
-6. Run `validate_datasets.bat`.
-7. Run `train_models.bat`, `train_deepfake.bat`, or manual training commands.
-
-Notes:
-- Kaggle downloads require a Kaggle account login.
-- If your source dataset is not CSV, convert it to CSV before training.
-
-Detailed column requirements are documented in `datasets/README.md`.
-
-## Run Web App
-
-Fast option on Windows: double-click `run_client.bat`.
-
+**Train Voice Model**:
 ```bash
+python -m ml_training.train_voice_deepfake_balanced
+```
+
+### Training Artifacts
+
+After training, the following files are created in `models/`:
+- `url_model.pkl` - XGBoost URL classifier
+- `email_model.pkl` - Logistic Regression email classifier
+- `sms_model.pkl` - Logistic Regression SMS classifier
+- `qr_model.pkl` - XGBoost QR classifier
+- `deepfake_efficientnet_b0.pt` - EfficientNet deepfake detector
+- `voice_model.pkl` - Random Forest voice classifier
+- `metrics_summary.json` - Consolidated model metrics
+- Confusion matrix plots in `static/plots/`
+
+### Google Colab Training
+
+For deepfake training with GPU acceleration, use the provided Colab notebooks:
+- `colab_deepfake_training.ipynb` - Deepfake training with ConvNeXt-Tiny
+- `colab_efficientnet_training.ipynb` - Deepfake training with EfficientNet-B0
+- `colab_deepfake_data_augmentation.py` - Dataset augmentation script
+
+Download the trained `.pt` and `.json` files from Colab and place them in `models/`.
+
+## Running the Application
+
+### Windows (Recommended)
+
+**Option 1: One-Click Launch**
+```bash
+# Double-click run_client.bat
+```
+
+**Option 2: Manual Launch**
+```bash
+# Activate virtual environment
+.venv\Scripts\activate
+
+# Run application
 python app.py
 ```
 
-Open http://127.0.0.1:5000
+### Linux/macOS
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate
+
+# Run application
+python app.py
+```
+
+### Access the Application
+
+Open your web browser and navigate to:
+```
+http://127.0.0.1:5000
+```
+
+The application will be available at this local address.
+
+### Configuration Options
+
+**Environment Variables**:
+```bash
+# Model priority flags
+set SMS_PREFER_TRANSFORMER=false
+set EMAIL_PREFER_TRANSFORMER=true
+python app.py
+```
+
+**Port Configuration**:
+```bash
+# Run on different port
+python app.py --port 8080
+```
+
+## Application Features
+
+### Detection Modalities
+
+1. **URL Phishing Detection**
+   - XGBoost classifier with 63 URL features
+   - Heuristic boosts for suspicious patterns
+   - URL redirection handling
+
+2. **Email Phishing Detection**
+   - TF-IDF + Logistic Regression
+   - Text preprocessing and feature extraction
+   - Class imbalance handling
+
+3. **SMS Phishing Detection**
+   - TF-IDF + Logistic Regression (balanced)
+   - Short text optimization
+   - Class weighting for imbalance
+
+4. **QR Code Phishing Detection**
+   - Multimodal fusion (visual + URL content)
+   - QR decoding and URL extraction
+   - Weighted fusion (URL: 0.7, QR: 0.3)
+
+5. **Deepfake Detection**
+   - EfficientNet-B0 CNN with transfer learning
+   - Frame-level video processing
+   - Optimized threshold (0.44)
+
+6. **Voice Deepfake Detection**
+   - Random Forest with hand-crafted audio features
+   - MFCC and spectral feature extraction
+   - Balanced subsampling
+
+### Multimodal Fusion
+
+- **Weighted Probability Fusion**: Combines multiple modalities
+- **Fusion Weights**: URL (0.35), Email (0.25), SMS (0.20), QR (0.15), Deepfake (0.05)
+- **Decision Threshold**: 0.5
+- **Error Correction**: Fusion can correct individual model errors
+
+### Dashboard Analytics
+
+- **Model Metrics**: Accuracy, Precision, Recall, F1, ROC-AUC
+- **Confusion Matrix**: TP, TN, FP, FN components
+- **Operational Analytics**: Label distribution, detection trends, response times
+- **Live Predictions**: Real-time prediction logging and display
+
+### Research-Focused API Responses
+
+All API endpoints include comprehensive debug information:
+- Response time metrics
+- Model parameters and configuration
+- Decision thresholds
+- Feature extraction details
+- Fusion weights and individual probabilities
+
+## API Endpoints
+
+### Detection Endpoints
+
+- `POST /api/detect/url` - URL phishing detection
+- `POST /api/detect/email` - Email phishing detection
+- `POST /api/detect/sms` - SMS phishing detection
+- `POST /api/detect/qr` - QR code phishing detection
+- `POST /api/detect/deepfake` - Deepfake detection
+- `POST /api/detect/voice` - Voice deepfake detection
+- `POST /api/detect/fusion` - Multimodal fusion detection
+
+### Management Endpoints
+
+- `POST /api/reload-models` - Reload all models and metrics
+- `GET /api/dashboard-data` - Get dashboard analytics data
+
+## Troubleshooting
+
+### Common Issues
+
+**Python not found**:
+- Ensure Python 3.10+ is installed
+- Verify "Add Python to PATH" was checked during installation
+
+**Module not found errors**:
+- Ensure virtual environment is activated
+- Run `pip install -r requirements.txt` again
+
+**Model not loading**:
+- Check model files exist in `models/` directory
+- Verify file naming conventions
+- Check file permissions
+
+**Dataset errors**:
+- Validate datasets with `validate_datasets.py`
+- Check CSV column names match requirements
+- Ensure label values are correct
+
+**Port already in use**:
+- Change port: `python app.py --port 8080`
+- Kill process using port 5000
+
+**GPU not detected (deepfake)**:
+- Install CUDA-compatible PyTorch
+- Update GPU drivers
+- Training will fall back to CPU (slower)
+
+### Getting Help
+
+1. Check `MODEL_DECISIONS_AND_RATIONALE.md` for detailed model explanations
+2. Review error messages in terminal/console
+3. Verify all dependencies are installed correctly
+4. Ensure datasets are properly formatted
+
+## Advanced Configuration
 
 ### Model Priority Flags
 
-You can switch text-model priority at runtime with environment variables:
+Control which models are used for text classification:
 
 ```bash
+# SMS: Use Transformer first (default: Logistic Regression)
 set SMS_PREFER_TRANSFORMER=true
+
+# Email: Use Logistic Regression first (default: Transformer)
 set EMAIL_PREFER_TRANSFORMER=false
-python app.py
 ```
 
-- `SMS_PREFER_TRANSFORMER=false` by default, so SMS uses Logistic Regression first and falls back to DistilBERT.
-- `EMAIL_PREFER_TRANSFORMER=true` by default, so email uses DistilBERT first and falls back to Logistic Regression.
-- Accepted true values are `1`, `true`, `yes`, and `on`.
+### Custom Model Integration
 
-## Features Implemented
+To add custom models:
 
-- URL phishing detection with handcrafted URL features + RandomForest
-- Email phishing detection with TF-IDF + Logistic Regression
-- SMS phishing detection with TF-IDF + Naive Bayes
-- QR decoding and URL model reuse
-- Trainable FaceForensics-style deepfake media detector with simulation fallback
-- Multimodal weighted fusion decision layer
-- SQLite logging for predictions and metadata
-- Dashboard charts:
-  - confusion matrix components (TP/TN/FP/FN)
-  - model accuracy comparison
-  - precision/recall/F1 comparison
-  - ROC-AUC comparison
-  - phishing vs legitimate distribution
-  - detection trend over time
-  - response time analysis
+1. Place model file in `models/` with correct format
+2. Add loader in `utils/model_loader.py`
+3. Implement `predict_probability()` method
+4. Update `metrics_summary.json` with model metrics
+5. Call `/api/reload-models` or restart app
 
-## Notes
+### Database Management
 
-- This is an academic prototype for research demonstration and grading.
-- Use real datasets and retrain models before evaluation.
-- If models are retrained while app is running, call `POST /api/reload-models`.
-- For reproducible installs, use `requirements-lock.txt` instead of `requirements.txt`.
+The application uses SQLite for logging predictions:
 
-## Model Integration and Updating (All Modalities)
+- **Database Location**: `database/research_app.db`
+- **Backup**: Copy `.db` file for backup
+- **Reset**: Delete `.db` file to clear logs
+- **Export**: Use SQLite tools to export data
 
-### Model File Formats
-- **Deepfake (PyTorch):** `.pt` (e.g., `deepfake_efficientnet_b0.pt`)
-- **URL/QR/Email/SMS (scikit-learn/XGBoost):** `.pkl`
+## Performance Optimization
 
-### Adding or Updating Models
-1. Place new or updated model files in the `models/` folder using the correct format and naming convention.
-   - Example: `models/deepfake_efficientnet_b0.pt`, `models/url_model.pkl`, etc.
-2. Place updated metrics files (e.g., `deepfake_efficientnet_b0_metrics.json`) in `models/`.
-3. (Optional) Merge or update `metrics_summary.json` for dashboard analytics.
-4. Regenerate confusion matrix and other plots using the provided scripts (see `update_efficientnet_confusion_matrix.py` for an example).
-5. Use the `/api/reload-models` endpoint or restart the app to reload all models and metrics.
+### For Better Performance
 
-### Training Deepfake Models in Colab
-- You can train deepfake models in Google Colab and download the `.pt` and metrics `.json` files.
-- Copy these files into the `models/` folder as above.
-- The app will use them automatically after reload.
+- Use GPU for deepfake training (if available)
+- Reduce dataset size for faster training
+- Use smaller batch sizes for memory efficiency
+- Enable model caching in production
 
-### Consistent Client Experience
-- All detection types (URL, Email, SMS, QR, Deepfake) are available in the web UI and API.
-- The backend automatically selects the correct model for each detection type.
-- All metrics and plots are updated and displayed together for a unified experience.
+### For Research Purposes
 
-### Adding New Model Types (e.g., Flax/JAX)
-- Add a loader in `utils/model_loader.py` for the new format.
-- Expose a `predict_probability()` method for the new model.
-- Add a form and endpoint if you want a new UI section.
+- Use full datasets for accurate metrics
+- Train with multiple random seeds
+- Cross-validate model performance
+- Log all hyperparameters and results
 
-### Troubleshooting
-- If a model is not detected, check file placement and naming in `models/`.
-- If metrics or plots are outdated, rerun the update scripts and reload models.
+## Security Considerations
+
+- **API Security**: Add authentication for production deployment
+- **Input Validation**: All inputs are validated server-side
+- **File Uploads**: File size and type restrictions enforced
+- **Database**: SQLite is for development only; use PostgreSQL for production
+- **HTTPS**: Use HTTPS in production environments
+
+## Citation and Acknowledgments
+
+If you use this system for research, please cite:
+
+```
+A Machine Learning-Based Multimodal Approach for Detection and Prevention 
+of Emerging Phishing Attacks
+```
+
+**Acknowledgments**:
+- Datasets from Kaggle, UCI, and FaceForensics++
+- ML frameworks: scikit-learn, XGBoost, PyTorch
+- Web framework: Flask
+- Visualization: Chart.js
+
+## License
+
+This is an academic research prototype. Please ensure compliance with dataset licenses when using this system.
+
+## Support and Documentation
+
+- **Detailed Model Rationale**: `MODEL_DECISIONS_AND_RATIONALE.md`
+- **Dataset Requirements**: `datasets/README.md`
+- **Training Scripts**: `ml_training/` directory
+- **API Documentation**: See inline code documentation
+
+## Version History
+
+- **v2.0**: Added light mode UI, comprehensive debug information, voice detection
+- **v1.0**: Initial release with URL, email, SMS, QR, and deepfake detection
