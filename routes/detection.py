@@ -411,12 +411,36 @@ def detect_url():
 
     log_text = f"{url} -> {resolved_url}" if resolved_url != url else url
     _log_prediction("url", log_text[:1000], label, confidence, elapsed)
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "model_type": "XGBoost" if registry.url_model is not None else "Heuristic",
+        "decision_threshold": 0.5,
+        "original_url": url,
+        "url_redirected": resolved_url != url,
+        "feature_count": 63  # Number of URL features extracted
+    }
+    
+    # Add model-specific debug info if model is loaded
+    if registry.url_model is not None:
+        debug_info["model_loaded"] = True
+        debug_info["model_parameters"] = {
+            "n_estimators": getattr(registry.url_model, 'n_estimators', 'N/A'),
+            "max_depth": getattr(registry.url_model, 'max_depth', 'N/A'),
+            "learning_rate": getattr(registry.url_model, 'learning_rate', 'N/A')
+        }
+    else:
+        debug_info["model_loaded"] = False
+        debug_info["fallback_mode"] = "Heuristic analysis"
+    
     return jsonify({
         "source": "url",
         "label": label,
         "confidence": confidence,
         "phishing_probability": prob,
-        "resolved_url": resolved_url
+        "resolved_url": resolved_url,
+        "debug": debug_info
     })
 
 
@@ -431,7 +455,34 @@ def detect_email():
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("email", content[:1000], label, confidence, elapsed)
-    return jsonify({"source": "email", "label": label, "confidence": confidence, "phishing_probability": prob})
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "model_type": "Logistic Regression with TF-IDF",
+        "decision_threshold": 0.5,
+        "text_length": len(content),
+        "feature_extraction": "TF-IDF",
+        "max_features": 10000,
+        "ngram_range": "(1, 2)"
+    }
+    
+    if email_model is not None:
+        debug_info["model_loaded"] = True
+        debug_info["model_parameters"] = {
+            "max_iter": getattr(email_model, 'max_iter', 'N/A'),
+            "class_weight": getattr(email_model, 'class_weight', 'N/A')
+        }
+    else:
+        debug_info["model_loaded"] = False
+    
+    return jsonify({
+        "source": "email", 
+        "label": label, 
+        "confidence": confidence, 
+        "phishing_probability": prob,
+        "debug": debug_info
+    })
 
 
 @detection_bp.route("/api/detect/sms", methods=["POST"])
@@ -445,7 +496,35 @@ def detect_sms():
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("sms", content[:1000], label, confidence, elapsed)
-    return jsonify({"source": "sms", "label": label, "confidence": confidence, "phishing_probability": prob})
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "model_type": "Logistic Regression with TF-IDF (Balanced)",
+        "decision_threshold": 0.5,
+        "text_length": len(content),
+        "feature_extraction": "TF-IDF",
+        "max_features": 8000,
+        "ngram_range": "(1, 2)",
+        "class_weighting": "balanced"
+    }
+    
+    if sms_model is not None:
+        debug_info["model_loaded"] = True
+        debug_info["model_parameters"] = {
+            "max_iter": getattr(sms_model, 'max_iter', 'N/A'),
+            "class_weight": getattr(sms_model, 'class_weight', 'N/A')
+        }
+    else:
+        debug_info["model_loaded"] = False
+    
+    return jsonify({
+        "source": "sms", 
+        "label": label, 
+        "confidence": confidence, 
+        "phishing_probability": prob,
+        "debug": debug_info
+    })
 
 
 @detection_bp.route("/api/detect/qr", methods=["POST"])
@@ -466,6 +545,12 @@ def detect_qr():
 
     log_text = f"{decoded_text} -> {resolved_url}" if (resolved_url and resolved_url != decoded_text) else (decoded_text or "")
     _log_prediction("qr", log_text[:1000], label, confidence, elapsed)
+    
+    # Add additional debug information for research purposes
+    debug["response_time_ms"] = elapsed
+    debug["file_size_bytes"] = len(file_bytes)
+    debug["model_type"] = "XGBoost with Multimodal Features"
+    
     return jsonify(
         {
             "source": "qr",
@@ -497,6 +582,21 @@ def detect_deepfake():
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("deepfake", media_file.filename or "uploaded_file", label, confidence, elapsed)
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "model_type": "EfficientNet-B0 CNN",
+        "decision_threshold": 0.44,  # Optimized threshold from training
+        "file_size_bytes": len(data),
+        "file_name": media_file.filename,
+        "frame_processing": "Frame-level classification",
+        "image_size": 160,  # Reduced from standard 224 for efficiency
+        "frames_per_video": 4,
+        "transfer_learning": "ImageNet pretrained weights",
+        "fine_tuning": "Last 2 feature blocks unfrozen"
+    }
+    
     return jsonify(
         {
             "source": "deepfake",
@@ -504,6 +604,7 @@ def detect_deepfake():
             "confidence": confidence,
             "phishing_probability": prob,
             "model_status": model_status,
+            "debug": debug_info
         }
     )
 
@@ -525,6 +626,20 @@ def detect_voice():
     elapsed = (time.perf_counter() - start) * 1000
 
     _log_prediction("voice", voice_file.filename or "uploaded_voice", label, confidence, elapsed)
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "model_type": "Random Forest Classifier",
+        "decision_threshold": 0.5,
+        "file_size_bytes": len(data),
+        "file_name": voice_file.filename,
+        "feature_extraction": "Hand-crafted audio features (MFCC, spectral)",
+        "n_estimators": 100,
+        "class_weighting": "balanced_subsample",
+        "parallel_processing": "All CPU cores"
+    }
+    
     return jsonify(
         {
             "source": "voice",
@@ -532,6 +647,7 @@ def detect_voice():
             "confidence": confidence,
             "phishing_probability": prob,
             "model_status": "trained_model",
+            "debug": debug_info
         }
     )
 
@@ -584,6 +700,24 @@ def detect_fusion():
     audio_prob = prediction_probs.get("voice")
     video_prob = prediction_probs.get("deepfake")
     image_prob = prediction_probs.get("image")
+    
+    # Add debug information for research purposes
+    debug_info = {
+        "response_time_ms": elapsed,
+        "fusion_method": "Weighted probability fusion",
+        "decision_threshold": 0.5,
+        "modalities_used": list(prediction_probs.keys()),
+        "fusion_weights": {
+            "url": 0.35,
+            "email": 0.25,
+            "sms": 0.20,
+            "qr": 0.15,
+            "deepfake": 0.05
+        },
+        "individual_probabilities": prediction_probs,
+        "weighted_calculation": "Sum of (probability * weight) / total_weight"
+    }
+    
     return jsonify(
         {
             "source": "fusion",
@@ -594,6 +728,7 @@ def detect_fusion():
             "audio": audio_prob,
             "video": video_prob,
             "image": image_prob,
+            "debug": debug_info
         }
     )
 

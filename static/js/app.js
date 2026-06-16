@@ -43,8 +43,8 @@ function showResult(payload) {
     const confidence = payload.confidence ? (payload.confidence * 100).toFixed(2) : 'N/A';
     const probability = payload.phishing_probability !== undefined ? (payload.phishing_probability * 100).toFixed(2) : confidence;
     
-    html += `<div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: ${isPhishing ? 'rgba(230, 57, 70, 0.15)' : 'rgba(67, 97, 238, 0.15)'}; border: 2px solid ${isPhishing ? '#e63946' : '#4361ee'};">`;
-    html += `<h3 style="color: ${isPhishing ? '#e63946' : '#4361ee'}; margin: 0 0 10px 0;">${payload.prediction_label}</h3>`;
+    html += `<div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: ${isPhishing ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)'}; border: 2px solid ${isPhishing ? '#ef4444' : '#10b981'};">`;
+    html += `<h3 style="color: ${isPhishing ? '#ef4444' : '#10b981'}; margin: 0 0 10px 0;">${payload.prediction_label}</h3>`;
     html += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">`;
     html += `<div><strong>Confidence:</strong> ${confidence}%</div>`;
     html += `<div><strong>Probability:</strong> ${probability}%</div>`;
@@ -62,8 +62,8 @@ function showResult(payload) {
   
   // Show additional details
   if (payload.debug) {
-    html += `<div style="padding: 15px; border-radius: 8px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3);">`;
-    html += `<h4 style="margin: 0 0 10px 0; color: #ffd700;">Debug Information</h4>`;
+    html += `<div style="padding: 15px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">`;
+    html += `<h4 style="margin: 0 0 10px 0; color: #3b82f6;">Debug Information</h4>`;
     
     if (payload.debug.url_probability !== undefined) {
       html += `<div><strong>URL Probability:</strong> ${(payload.debug.url_probability * 100).toFixed(2)}%</div>`;
@@ -89,8 +89,8 @@ function showResult(payload) {
   
   // Show raw JSON for debugging (collapsible)
   html += `<details style="margin-top: 10px;">`;
-  html += `<summary style="cursor: pointer; color: #94a3b8; font-size: 12px;">Show Raw JSON</summary>`;
-  html += `<pre style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 11px; overflow-x: auto;">${JSON.stringify(payload, null, 2)}</pre>`;
+  html += `<summary style="cursor: pointer; color: #64748b; font-size: 12px;">Show Raw JSON</summary>`;
+  html += `<pre style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 4px; font-size: 11px; overflow-x: auto;">${JSON.stringify(payload, null, 2)}</pre>`;
   html += `</details>`;
   
   box.innerHTML = html;
@@ -181,11 +181,28 @@ async function refreshDashboard() {
         {
           label: "Accuracy",
           data: mm.accuracy,
-          backgroundColor: "rgba(20,184,166,0.8)",
+          backgroundColor: "rgba(16,185,129,0.8)",
         },
       ],
     },
-    options: { responsive: true, scales: { y: { min: 0, max: 1 } } },
+    options: { 
+      responsive: true, 
+      scales: { 
+        y: { 
+          min: 0, 
+          max: 1,
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   upsertChart("prf", "prfChart", {
@@ -201,12 +218,29 @@ async function refreshDashboard() {
         {
           label: "Recall",
           data: mm.recall,
-          backgroundColor: "rgba(245,158,11,0.75)",
+          backgroundColor: "rgba(239,68,68,0.75)",
         },
-        { label: "F1", data: mm.f1, backgroundColor: "rgba(168,85,247,0.75)" },
+        { label: "F1", data: mm.f1, backgroundColor: "rgba(16,185,129,0.75)" },
       ],
     },
-    options: { responsive: true, scales: { y: { min: 0, max: 1 } } },
+    options: { 
+      responsive: true, 
+      scales: { 
+        y: { 
+          min: 0, 
+          max: 1,
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   upsertChart("roc", "rocChart", {
@@ -217,21 +251,54 @@ async function refreshDashboard() {
         {
           label: "ROC-AUC",
           data: mm.roc_auc,
-          borderColor: "rgba(250,204,21,0.95)",
-          backgroundColor: "rgba(250,204,21,0.35)",
+          borderColor: "rgba(16,185,129,0.95)",
+          backgroundColor: "rgba(16,185,129,0.35)",
           tension: 0.35,
           fill: true,
         },
       ],
     },
-    options: { responsive: true, scales: { y: { min: 0, max: 1 } } },
+    options: { 
+      responsive: true, 
+      scales: { 
+        y: { 
+          min: 0, 
+          max: 1,
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   const confusionData = buildConfusionDataset(data.confusion);
   upsertChart("confusion", "confusionChart", {
     type: "bar",
     data: confusionData,
-    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+    options: { 
+      responsive: true, 
+      scales: { 
+        y: { 
+          beginAtZero: true,
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   const labels = Object.keys(data.label_distribution);
@@ -241,10 +308,15 @@ async function refreshDashboard() {
     data: {
       labels,
       datasets: [
-        { data: values, backgroundColor: ["#ef4444", "#22c55e", "#38bdf8"] },
+        { data: values, backgroundColor: ["#ef4444", "#10b981", "#3b82f6"] },
       ],
     },
-    options: { responsive: true },
+    options: { 
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   upsertChart("trend", "trendChart", {
@@ -255,12 +327,29 @@ async function refreshDashboard() {
         {
           label: "Detections Over Time",
           data: data.trends.map((x) => x.count),
-          borderColor: "rgba(14,165,233,0.9)",
+          borderColor: "rgba(16,185,129,0.9)",
+          backgroundColor: "rgba(16,185,129,0.2)",
           tension: 0.35,
+          fill: true,
         },
       ],
     },
-    options: { responsive: true },
+    options: { 
+      responsive: true,
+      scales: {
+        y: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   upsertChart("response", "responseChart", {
@@ -271,11 +360,26 @@ async function refreshDashboard() {
         {
           label: "Avg Response Time (ms)",
           data: data.response_times.map((x) => x.avg_ms),
-          backgroundColor: "rgba(251,146,60,0.75)",
+          backgroundColor: "rgba(59,130,246,0.75)",
         },
       ],
     },
-    options: { responsive: true },
+    options: { 
+      responsive: true,
+      scales: {
+        y: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        },
+        x: {
+          ticks: { color: '#64748b' },
+          grid: { color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#1e293b' } }
+      }
+    },
   });
 
   updateRecentTable(data.recent_logs);

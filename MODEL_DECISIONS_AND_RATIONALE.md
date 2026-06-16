@@ -14,7 +14,8 @@
 8. [Multimodal Fusion Strategy](#multimodal-fusion-strategy)
 9. [Dataset Selection and Preprocessing](#dataset-selection-and-preprocessing)
 10. [Performance Evaluation Metrics](#performance-evaluation-metrics)
-11. [Conclusion](#conclusion)
+11. [API Response Structure and Research-Focused Debug Information](#api-response-structure-and-research-focused-debug-information)
+12. [Conclusion](#conclusion)
 
 ---
 
@@ -750,6 +751,162 @@ To validate the effectiveness of the multimodal fusion approach, comprehensive t
 
 ---
 
+## API Response Structure and Research-Focused Debug Information
+
+### Research-Focused API Design Rationale
+
+Since this system is designed for research purposes, all API endpoints return comprehensive debug information alongside core detection results. This design decision was made to support:
+
+1. **Model Explainability**: Researchers can understand why specific predictions were made
+2. **Performance Analysis**: Detailed timing and model parameters enable performance optimization studies
+3. **Reproducibility**: Complete model information ensures research reproducibility
+4. **Decision Transparency**: Fusion weights and individual probabilities reveal multimodal decision logic
+5. **Model Comparison**: Detailed parameters allow comparison with alternative approaches
+
+### Standard API Response Structure
+
+All detection endpoints follow this response format:
+
+```json
+{
+  "source": "modality_type",
+  "label": "Phishing/Legitimate",
+  "confidence": 0.0-1.0,
+  "phishing_probability": 0.0-1.0,
+  "debug": {
+    "response_time_ms": float,
+    "model_type": "string",
+    "decision_threshold": float,
+    // ... additional modality-specific debug info
+  }
+}
+```
+
+### Debug Information by Modality
+
+#### URL Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **model_type**: "XGBoost" or "Heuristic" (fallback)
+- **decision_threshold**: 0.5 (standard classification threshold)
+- **original_url**: Input URL before processing
+- **url_redirected**: Boolean indicating if URL was redirected
+- **feature_count**: 63 (number of URL features extracted)
+- **model_loaded**: Boolean indicating if ML model is available
+- **model_parameters**: XGBoost hyperparameters (n_estimators, max_depth, learning_rate)
+- **fallback_mode**: "Heuristic analysis" if ML model unavailable
+
+**Rationale**: URL detection combines ML model predictions with heuristic boosts. Debug information reveals whether the ML model was used, which features were extracted, and if URL redirection occurred, all critical for understanding detection behavior.
+
+#### Email Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **model_type**: "Logistic Regression with TF-IDF"
+- **decision_threshold**: 0.5
+- **text_length**: Character count of input email
+- **feature_extraction**: "TF-IDF"
+- **max_features**: 10000 (maximum vocabulary size)
+- **ngram_range**: "(1, 2)" (unigrams and bigrams)
+- **model_parameters**: Logistic Regression hyperparameters (max_iter, class_weight)
+- **model_loaded**: Boolean indicating if model is available
+
+**Rationale**: Email detection uses text classification with TF-IDF feature extraction. Debug information reveals text processing parameters, vocabulary size, and n-gram configuration, enabling researchers to understand feature engineering decisions.
+
+#### SMS Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **model_type**: "Logistic Regression with TF-IDF (Balanced)"
+- **decision_threshold**: 0.5
+- **text_length**: Character count of input SMS
+- **feature_extraction**: "TF-IDF"
+- **max_features**: 8000 (smaller vocabulary for shorter texts)
+- **ngram_range**: "(1, 2)"
+- **class_weighting**: "balanced" (handles class imbalance)
+- **model_parameters**: Logistic Regression hyperparameters
+- **model_loaded**: Boolean indicating if model is available
+
+**Rationale**: SMS detection uses similar text classification as email but with balanced class weighting due to different data distribution. Debug information highlights the class imbalance handling strategy.
+
+#### QR Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **file_size_bytes**: Size of uploaded QR image
+- **model_type**: "XGBoost with Multimodal Features"
+- **decoded_success**: Boolean indicating if QR was successfully decoded
+- **url_probability**: URL model probability (if QR contains URL)
+- **qr_model_probability**: QR visual model probability
+- **fused_probability**: Combined probability from URL + QR models
+- **decision_threshold**: 0.5
+- **fusion_weights**: URL: 0.7, QR: 0.3 (URL dominates for security)
+- **model_status**: Which model(s) were used (url_qr_fusion, url_model_only, qr_model_only)
+
+**Rationale**: QR detection uses multimodal fusion combining visual QR analysis with URL content analysis. Debug information reveals the fusion strategy, individual model contributions, and why specific weights were chosen (URL dominance for security).
+
+#### Deepfake Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **model_type**: "EfficientNet-B0 CNN"
+- **decision_threshold**: 0.44 (optimized threshold from training)
+- **file_size_bytes**: Size of uploaded media file
+- **file_name**: Original filename
+- **frame_processing**: "Frame-level classification"
+- **image_size**: 160 (reduced from standard 224 for efficiency)
+- **frames_per_video**: 4 (number of frames extracted per video)
+- **transfer_learning**: "ImageNet pretrained weights"
+- **fine_tuning**: "Last 2 feature blocks unfrozen"
+
+**Rationale**: Deepfake detection uses transfer learning with EfficientNet-B0. Debug information reveals the optimization strategy (reduced image size, limited frames), transfer learning approach, and fine-tuning strategy, all critical for understanding the trade-off between accuracy and efficiency.
+
+#### Voice Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **model_type**: "Random Forest Classifier"
+- **decision_threshold**: 0.5
+- **file_size_bytes**: Size of uploaded audio file
+- **file_name**: Original filename
+- **feature_extraction**: "Hand-crafted audio features (MFCC, spectral)"
+- **n_estimators**: 100 (number of trees in Random Forest)
+- **class_weighting**: "balanced_subsample"
+- **parallel_processing**: "All CPU cores"
+
+**Rationale**: Voice detection uses traditional machine learning with hand-crafted audio features rather than deep learning. Debug information reveals the feature extraction approach (MFCC, spectral features), model configuration, and parallel processing strategy.
+
+#### Fusion Detection Debug Information
+- **response_time_ms**: Processing time in milliseconds
+- **fusion_method**: "Weighted probability fusion"
+- **decision_threshold**: 0.5
+- **modalities_used**: List of modalities included in fusion
+- **fusion_weights**: URL: 0.35, Email: 0.25, SMS: 0.20, QR: 0.15, Deepfake: 0.05
+- **individual_probabilities**: Probability from each modality
+- **weighted_calculation**: "Sum of (probability * weight) / total_weight"
+
+**Rationale**: Fusion combines multiple modalities using weighted probability fusion. Debug information reveals the fusion strategy, weight rationale (URL highest due to content analysis reliability), and individual modality contributions, enabling researchers to understand multimodal decision logic.
+
+### Why This Approach for Research
+
+**Comprehensive Debug Information Benefits**:
+
+1. **Model Explainability**: Researchers can trace exactly how each prediction was made
+2. **Parameter Transparency**: All model hyperparameters and configuration choices are exposed
+3. **Performance Analysis**: Response times and processing details enable optimization studies
+4. **Decision Logic**: Fusion weights and individual probabilities reveal multimodal reasoning
+5. **Reproducibility**: Complete information ensures research can be reproduced
+6. **Comparative Analysis**: Detailed parameters enable comparison with alternative approaches
+7. **Debugging**: Comprehensive information aids in identifying and fixing issues
+8. **Documentation**: Debug information serves as self-documenting API behavior
+
+**Alternative Approaches Considered and Rejected**:
+
+1. **Minimal API Responses**: Only return label and probability
+   - **Rejected**: Insufficient for research analysis and model explainability
+
+2. **Optional Debug Parameter**: Include debug info only when requested
+   - **Rejected**: Adds complexity, research use case always needs debug info
+
+3. **Separate Debug Endpoint**: Separate endpoint for detailed information
+   - **Rejected**: Requires additional API calls, less convenient for research
+
+4. **Conditional Debug Info**: Only include debug for certain modalities
+   - **Rejected**: Inconsistent API behavior, harder to use programmatically
+
+**Selected Approach**: Always include comprehensive debug information in all API responses. This provides maximum research utility while maintaining consistent API behavior across all modalities.
+
+---
+
 ## Conclusion
 
 ### Model Selection Summary
@@ -782,12 +939,3 @@ To validate the effectiveness of the multimodal fusion approach, comprehensive t
 
 ---
 
-## References
-
-- Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (pp. 785-794).
-- Tan, M., & Le, Q. (2019). EfficientNet: Rethinking model scaling for convolutional neural networks. In International Conference on Machine Learning (pp. 6105-6114).
-- Rössler, A., Cozzolino, D., Verdoliva, L., Riess, C., Thies, J., & Nießner, M. (2019). FaceForensics++: Learning to detect manipulated facial images. In Proceedings of the IEEE International Conference on Computer Vision (pp. 1-11).
-- Almeida, T. A., Hidalgo, J. M. G., & Yamakami, A. (2011). Contributions to the study of SMS spam filtering: New collection and results. Proceedings of the ACM Symposium on Document Engineering (DOCENG), 2011.
-- Wang, S., & Manning, C. D. (2012). Baselines and bigrams: Simple, good sentiment and topic classification. In Proceedings of the 50th Annual Meeting of the Association for Computational Linguistics (ACL) (pp. 90-94).
-- Moghaddam, M., et al. (2022). A comprehensive survey of phishing detection techniques based on lexical and URL analysis. IEEE Access.
-- Dolhansky, B., et al. (2020). The DeepFake Detection Challenge (DFDC) Preview Dataset. arXiv preprint arXiv:2006.12439.
