@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from utils.preprocessing import extract_url_features, resolve_url_redirect
+from utils.preprocessing import extract_url_features
 from utils.qr_utils import decode_qr_image
 
 
@@ -80,8 +80,7 @@ def build_qr_feature_frame(
     url_prob = 0.5
     url_model_available = 1 if url_model is not None else 0
     if url_model is not None and normalized_url:
-        resolved_url = resolve_url_redirect(normalized_url)
-        url_features = extract_url_features(resolved_url)
+        url_features = extract_url_features(normalized_url)
         expected_columns = list(getattr(url_model, "feature_names_in_", url_features.columns))
         url_features = url_features.reindex(columns=expected_columns, fill_value=0)
         url_prob = float(url_model.predict_proba(url_features)[0][1])

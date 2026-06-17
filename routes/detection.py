@@ -10,7 +10,7 @@ from database.db import db
 from database.models import PredictionLog
 from utils.fusion import weighted_fusion
 from utils.model_loader import registry
-from utils.preprocessing import clean_text, extract_url_features, resolve_url_redirect
+from utils.preprocessing import clean_text, extract_url_features
 from utils.qr_features import build_qr_feature_frame, decode_qr_text_from_bytes
 from utils.voice_features import VOICE_FEATURE_COLUMNS, extract_voice_features_from_bytes
 
@@ -192,11 +192,10 @@ def _log_prediction(source_type, input_text, label, confidence, response_time_ms
 
 def _predict_url(url: str):
     if not url:
-        return "Legitimate", 0.0, 0.0, url
+        return "Legitimate", 0.0, 0.0
 
-    resolved_url = resolve_url_redirect(url)
-    raw = resolved_url.lower()
-    features = extract_url_features(resolved_url)
+    raw = url.lower()
+    features = extract_url_features(url)
     if registry.url_model is not None:
         expected_columns = list(getattr(registry.url_model, "feature_names_in_", features.columns))
         features = features.reindex(columns=expected_columns, fill_value=0)
@@ -245,7 +244,7 @@ def _predict_url(url: str):
 
     # Check legitimacy whitelist with strict domain/subdomain matching
     is_known_legitimate = any(_is_domain_or_subdomain(domain, known) for known in KNOWN_LEGITIMATE_DOMAINS)
-    
+
     # Check educational/government domains
     is_educational_gov = any(domain.endswith(suffix) for suffix in EDUCATIONAL_DOMAIN_SUFFIXES | GOVERNMENT_DOMAIN_SUFFIXES)
 
@@ -253,7 +252,7 @@ def _predict_url(url: str):
         prob = min(prob * 0.15, 0.25)
 
     label, confidence = _label_from_probability(prob)
-    return label, confidence, prob, resolved_url
+    return label, confidence, prob
 
 
 def _predict_text(text: str, model):
@@ -291,14 +290,13 @@ def _predict_qr(file_bytes: bytes):
     decoded_text = decode_qr_text_from_bytes(file_bytes)
 
     url_prob = None
-    resolved_url = None
     if decoded_text:
         from utils.qr_features import _normalized_url_candidate
         normalized_url, is_url = _normalized_url_candidate(decoded_text)
         if is_url:
-            _, _, url_prob, resolved_url = _predict_url(normalized_url)
+            _, _, url_prob = _predict_url(normalized_url)
         else:
-            _, _, url_prob, resolved_url = _predict_url(decoded_text)
+            _, _, url_prob = _predict_url(decoded_text)
 
     qr_prob = None
     if registry.qr_model is not None:
@@ -343,7 +341,7 @@ def _predict_qr(file_bytes: bytes):
         "decision_threshold": float(threshold),
         "fusion_weights": fusion_weights,
     }
-    return label, confidence, float(final_prob), decoded_text, resolved_url, model_status, debug
+    return label, confidence, float(final_prob), decoded_text, model_status, debug
 
 
 def _select_text_model(task: str):
@@ -406,22 +404,20 @@ def detect_url():
     payload = request.get_json(silent=True) or request.form
     url = str(payload.get("url", "")).strip()
 
-    label, confidence, prob, resolved_url = _predict_url(url)
+    label, confidence, prob = _predict_url(url)
     elapsed = (time.perf_counter() - start) * 1000
 
-    log_text = f"{url} -> {resolved_url}" if resolved_url != url else url
-    _log_prediction("url", log_text[:1000], label, confidence, elapsed)
-    
+    _log_prediction("url", url[:1000], label, confidence, elapsed)
+
     # Add debug information for research purposes
     debug_info = {
         "response_time_ms": elapsed,
         "model_type": "XGBoost" if registry.url_model is not None else "Heuristic",
         "decision_threshold": 0.5,
         "original_url": url,
-        "url_redirected": resolved_url != url,
         "feature_count": 63  # Number of URL features extracted
     }
-    
+
     # Add model-specific debug info if model is loaded
     if registry.url_model is not None:
         debug_info["model_loaded"] = True
@@ -433,13 +429,12 @@ def detect_url():
     else:
         debug_info["model_loaded"] = False
         debug_info["fallback_mode"] = "Heuristic analysis"
-    
+
     return jsonify({
         "source": "url",
         "label": label,
         "confidence": confidence,
         "phishing_probability": prob,
-        "resolved_url": resolved_url,
         "debug": debug_info
     })
 
@@ -537,25 +532,23 @@ def detect_qr():
     file_bytes = qr_file.read()
 
     try:
-        label, confidence, prob, decoded_text, resolved_url, model_status, debug = _predict_qr(file_bytes)
+        label, confidence, prob, decoded_text, model_status, debug = _predict_qr(file_bytes)
     except RuntimeError as exc:
         return jsonify({"error": str(exc), "model_status": "qr_unavailable"}), 503
 
     elapsed = (time.perf_counter() - start) * 1000
 
-    log_text = f"{decoded_text} -> {resolved_url}" if (resolved_url and resolved_url != decoded_text) else (decoded_text or "")
-    _log_prediction("qr", log_text[:1000], label, confidence, elapsed)
-    
+    _log_prediction("qr", decoded_text[:1000] if decoded_text else "", label, confidence, elapsed)
+
     # Add additional debug information for research purposes
     debug["response_time_ms"] = elapsed
     debug["file_size_bytes"] = len(file_bytes)
     debug["model_type"] = "XGBoost with Multimodal Features"
-    
+
     return jsonify(
         {
             "source": "qr",
             "decoded_url": decoded_text,
-            "resolved_url": resolved_url,
             "label": label,
             "confidence": confidence,
             "phishing_probability": prob,
@@ -660,7 +653,7 @@ def detect_fusion():
     prediction_probs = {}
 
     if payload.get("url"):
-        _, _, prob, _ = _predict_url(str(payload["url"]))
+        _, _, prob = _predict_url(str(payload["url"]))
         prediction_probs["url"] = prob
 
     if payload.get("email_text"):
@@ -674,7 +667,7 @@ def detect_fusion():
         prediction_probs["sms"] = prob
 
     if payload.get("qr_url"):
-        _, _, prob, _ = _predict_url(str(payload["qr_url"]))
+        _, _, prob = _predict_url(str(payload["qr_url"]))
         prediction_probs["qr"] = prob
 
 
