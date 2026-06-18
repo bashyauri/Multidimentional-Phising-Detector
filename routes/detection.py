@@ -18,11 +18,12 @@ from utils.voice_features import VOICE_FEATURE_COLUMNS, extract_voice_features_f
 detection_bp = Blueprint("detection", __name__)
 
 KNOWN_LEGITIMATE_DOMAINS = {
-    "github.com", "google.com", "microsoft.com", "apple.com", "amazon.com",
-    "facebook.com", "twitter.com", "linkedin.com", "youtube.com", "instagram.com",
-    "stackoverflow.com", "reddit.com", "wikipedia.org", "github.io", "bitbucket.org",
-    "gitlab.com", "heroku.com", "vercel.com", "netlify.com", "aws.amazon.com",
-    "paypal.com", "openai.com",
+    "github.com", "google.com", "google.net", "google.org", "microsoft.com", "microsoft.net",
+    "apple.com", "amazon.com", "amazon.net", "facebook.com", "facebook.net",
+    "twitter.com", "twitter.net", "linkedin.com", "youtube.com", "youtube.net",
+    "instagram.com", "stackoverflow.com", "reddit.com", "reddit.net", "wikipedia.org",
+    "github.io", "bitbucket.org", "gitlab.com", "heroku.com", "vercel.com",
+    "netlify.com", "aws.amazon.com", "paypal.com", "paypal.net", "openai.com",
 }
 
 KNOWN_SHORTENER_DOMAINS = {
