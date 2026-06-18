@@ -88,27 +88,36 @@ def _count_suspicious_url_tokens(raw_url: str) -> int:
 def _is_typosquatting(domain: str) -> bool:
     """Detect if domain mimics known brand with character substitution."""
     domain_part = domain.split('.')[0].lower()
-    
+
     # Common character substitutions: 0→o, 1→i/l, 3→e, 5→s, 7→t
     substitutions = {
         '0': 'o', '1': ['i', 'l'], '3': 'e', '5': 's', '7': 't',
         'i': ['1', '!'], 'l': ['1', '!'], 'o': '0', 'e': '3', 's': '5', 't': '7'
     }
-    
+
     for brand in KNOWN_BRANDS:
         # Direct contains (e.g., "amaz0n" contains pattern of "amazon")
         if brand in domain_part:
             continue
-        
+
         # Check if domain is a typo variant of brand
         brand_clean = brand.replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('5', 's').replace('7', 't')
         domain_clean = domain_part.replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('5', 's').replace('7', 't')
-        
+
+        # Remove hyphens for comparison (e.g., "net-flix" vs "netflix")
+        brand_clean_no_hyphen = brand_clean.replace('-', '')
+        domain_clean_no_hyphen = domain_clean.replace('-', '')
+
         # Calculate similarity (if >80% chars match, it's likely typosquatting)
         if brand_clean in domain_clean or domain_clean in brand_clean:
             if len(set(brand_clean) & set(domain_clean)) / max(len(brand_clean), len(domain_clean)) > 0.7:
                 return True
-    
+
+        # Check with hyphens removed (e.g., "net-flix" vs "netflix")
+        if brand_clean_no_hyphen in domain_clean_no_hyphen or domain_clean_no_hyphen in brand_clean_no_hyphen:
+            if len(set(brand_clean_no_hyphen) & set(domain_clean_no_hyphen)) / max(len(brand_clean_no_hyphen), len(domain_clean_no_hyphen)) > 0.7:
+                return True
+
     return False
 
 
