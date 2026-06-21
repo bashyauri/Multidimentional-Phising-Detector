@@ -408,6 +408,30 @@ function detectInputType(content) {
   return "email";
 }
 
+function detectFileType(file) {
+  if (!file) return null;
+
+  const fileType = file.type.toLowerCase();
+  const fileName = file.name.toLowerCase();
+
+  // QR code detection (image files)
+  if (fileType.startsWith("image/") || fileName.match(/\.(png|jpg|jpeg|gif|bmp|webp)$/i)) {
+    return "qr";
+  }
+
+  // Deepfake detection (video files)
+  if (fileType.startsWith("video/") || fileName.match(/\.(mp4|avi|mov|mkv|webm|flv)$/i)) {
+    return "deepfake";
+  }
+
+  // Voice detection (audio files)
+  if (fileType.startsWith("audio/") || fileName.match(/\.(mp3|wav|ogg|flac|m4a|aac)$/i)) {
+    return "voice";
+  }
+
+  return null;
+}
+
 function attachHandlers() {
   // Handle input type selection change
   document.getElementById("inputType").addEventListener("change", (e) => {
@@ -453,16 +477,16 @@ function attachHandlers() {
     if (inputType === "auto") {
       // Auto-detect based on content
       if (fileContent && fileContent.size > 0) {
-        // File-based auto-detection
-        const fileType = fileContent.type;
-        if (fileType.startsWith("image/")) {
+        // File-based auto-detection using improved detection
+        const detectedFileType = detectFileType(fileContent);
+        if (detectedFileType === "qr") {
           result = await postFormData("/api/detect/qr", formData);
-        } else if (fileType.startsWith("video/")) {
+        } else if (detectedFileType === "deepfake") {
           result = await postFormData("/api/detect/deepfake", formData);
-        } else if (fileType.startsWith("audio/")) {
+        } else if (detectedFileType === "voice") {
           result = await postFormData("/api/detect/voice", formData);
         } else {
-          showResult({ error: "Unsupported file type" });
+          showResult({ error: "Unsupported file type. Please upload an image (QR), video (deepfake), or audio (voice) file." });
           return;
         }
       } else if (textContent) {
