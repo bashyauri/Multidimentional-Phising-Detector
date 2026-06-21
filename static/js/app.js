@@ -386,21 +386,24 @@ async function refreshDashboard() {
 }
 
 function detectInputType(content) {
-  // URL detection
-  if (content.match(/^https?:\/\/[^\s]+$/i)) {
+  const trimmedContent = content.trim();
+
+  // URL detection - check if content is primarily a URL
+  // More flexible regex that allows URLs with or without trailing whitespace
+  if (trimmedContent.match(/^https?:\/\/[^\s]+/i) || trimmedContent.match(/^www\.[^\s]+/i)) {
     return "url";
   }
-  
+
   // Email detection (contains @, has email-like structure)
-  if (content.includes("@") && content.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+  if (trimmedContent.includes("@") && trimmedContent.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
     return "email";
   }
-  
-  // SMS detection (short text, typically < 160 chars)
-  if (content.length < 160 && !content.includes("@")) {
+
+  // SMS detection (short text, typically < 160 chars, no @, no URL pattern)
+  if (trimmedContent.length < 160 && !trimmedContent.includes("@") && !trimmedContent.match(/https?:\/\/|www\./i)) {
     return "sms";
   }
-  
+
   // Default to email for longer text
   return "email";
 }

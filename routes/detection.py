@@ -282,7 +282,7 @@ def _predict_text(text: str, model):
     # Rule-based safety boost for common phishing language with links/money claims.
     raw = text.lower()
     has_url = bool(re.search(r"https?://|www\.", raw))
-    money_terms = ["prize", "won", "winner", "cash", "claim", "reward", "bonus", "offer", "free", "gift"]
+    money_terms = ["prize", "won", "winner", "cash", "claim", "reward", "bonus", "offer", "free", "gift", "refund", "tax"]
     action_terms = ["now", "urgent", "click", "verify", "limited", "act fast", "confirm"]
     has_money_signal = any(term in raw for term in money_terms)
     action_hits = sum(term in raw for term in action_terms)
