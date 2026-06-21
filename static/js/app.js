@@ -390,7 +390,9 @@ function detectInputType(content) {
 
   // URL detection - check if content is primarily a URL
   // More flexible regex that allows URLs with or without trailing whitespace
-  if (trimmedContent.match(/^https?:\/\/[^\s]+/i) || trimmedContent.match(/^www\.[^\s]+/i)) {
+  const urlPattern = /^https?:\/\/[^\s]+/i;
+  const wwwPattern = /^www\.[^\s]+/i;
+  if (urlPattern.test(trimmedContent) || wwwPattern.test(trimmedContent)) {
     return "url";
   }
 
@@ -400,7 +402,7 @@ function detectInputType(content) {
   }
 
   // SMS detection (short text, typically < 160 chars, no @, no URL pattern)
-  if (trimmedContent.length < 160 && !trimmedContent.includes("@") && !trimmedContent.match(/https?:\/\/|www\./i)) {
+  if (trimmedContent.length < 160 && !trimmedContent.includes("@") && !urlPattern.test(trimmedContent) && !wwwPattern.test(trimmedContent)) {
     return "sms";
   }
 
