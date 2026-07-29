@@ -29,7 +29,8 @@ def train_email_model(dataset_path: Path):
     x = df[text_col].astype(str).apply(clean_text)
     y = df[label_col].apply(normalize_label)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+    x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42, stratify=y)
+    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y)
 
     pipeline = Pipeline([
         ("tfidf", TfidfVectorizer(max_features=10000, ngram_range=(1, 2))),
@@ -42,18 +43,23 @@ def train_email_model(dataset_path: Path):
     y_prob = pipeline.predict_proba(x_test)[:, 1]
 
     metrics = evaluate_model(y_test, y_pred, y_prob)
-    metrics["model"] = "LogisticRegression + TF-IDF"
+    metrics["model"] = "LogisticRegression + TF-IDF (70/15/15 split)"
     metrics["dataset"] = str(dataset_path)
+    metrics["split_method"] = "three-way (70% train, 15% validation, 15% test)"
+    metrics["train_samples"] = len(x_train)
+    metrics["validation_samples"] = len(x_val)
+    metrics["test_samples"] = len(x_test)
 
     MODELS_DIR.mkdir(exist_ok=True)
-    model_out = MODELS_DIR / "email_model.pkl"
+    model_out = MODELS_DIR / "email_model_validation.pkl"
     joblib.dump(pipeline, model_out)
 
-    save_confusion_plot(metrics["confusion_matrix"], "email")
-    write_metrics("email", metrics)
+    save_confusion_plot(metrics["confusion_matrix"], "email_validation")
+    write_metrics("email_validation", metrics)
 
-    print("Email model trained successfully")
+    print("Email model trained successfully with three-way split")
     print(f"Model saved to: {model_out}")
+    print(f"Train samples: {len(x_train)}, Validation samples: {len(x_val)}, Test samples: {len(x_test)}")
     print(metrics)
 
 

@@ -50,7 +50,8 @@ def train_url_model(dataset_path: Path):
         # Fallback: use all numeric precomputed columns
         x = x_all.select_dtypes(include="number")
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+    x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42, stratify=y)
+    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y)
 
     try:
         from xgboost import XGBClassifier
@@ -66,7 +67,7 @@ def train_url_model(dataset_path: Path):
             n_jobs=2,
             tree_method="hist",
         )
-        model_name = "XGBoost + URL feature engineering"
+        model_name = "XGBoost + URL feature engineering (70/15/15 split)"
     except ImportError:
         model = HistGradientBoostingClassifier(
             max_iter=250,
@@ -75,7 +76,7 @@ def train_url_model(dataset_path: Path):
             l2_regularization=0.1,
             random_state=42,
         )
-        model_name = "HistGradientBoosting fallback + URL feature engineering"
+        model_name = "HistGradientBoosting fallback + URL feature engineering (70/15/15 split)"
 
     model.fit(x_train, y_train)
 
@@ -85,16 +86,21 @@ def train_url_model(dataset_path: Path):
     metrics = evaluate_model(y_test, y_pred, y_prob)
     metrics["model"] = model_name
     metrics["dataset"] = str(dataset_path)
+    metrics["split_method"] = "three-way (70% train, 15% validation, 15% test)"
+    metrics["train_samples"] = len(x_train)
+    metrics["validation_samples"] = len(x_val)
+    metrics["test_samples"] = len(x_test)
 
     MODELS_DIR.mkdir(exist_ok=True)
-    model_out = MODELS_DIR / "url_model.pkl"
+    model_out = MODELS_DIR / "url_model_validation.pkl"
     joblib.dump(model, model_out)
 
-    save_confusion_plot(metrics["confusion_matrix"], "url")
-    write_metrics("url", metrics)
+    save_confusion_plot(metrics["confusion_matrix"], "url_validation")
+    write_metrics("url_validation", metrics)
 
-    print("URL model trained successfully")
+    print("URL model trained successfully with three-way split")
     print(f"Model saved to: {model_out}")
+    print(f"Train samples: {len(x_train)}, Validation samples: {len(x_val)}, Test samples: {len(x_test)}")
     print(metrics)
 
 

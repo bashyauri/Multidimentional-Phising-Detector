@@ -75,26 +75,26 @@ def train_qr_model(dataset_dir: Path, max_samples_per_class: int | None = None) 
     x = pd.DataFrame(rows).fillna(0)
     y = np.array(labels, dtype=np.int64)
 
-    x_train, x_test, y_train, y_test = train_test_split(
+    x_train, x_temp, y_train, y_temp = train_test_split(
         x,
         y,
-        test_size=0.2,
+        test_size=0.3,
         random_state=42,
         stratify=y,
     )
 
-    x_fit, x_val, y_fit, y_val = train_test_split(
-        x_train,
-        y_train,
-        test_size=0.2,
+    x_val, x_test, y_val, y_test = train_test_split(
+        x_temp,
+        y_temp,
+        test_size=0.5,
         random_state=42,
-        stratify=y_train,
+        stratify=y_temp,
     )
 
-    class_counts = np.bincount(y_fit, minlength=2)
+    class_counts = np.bincount(y_train, minlength=2)
     scale_pos_weight = float(class_counts[0] / max(class_counts[1], 1)) if class_counts[1] else 1.0
 
-    model_name = "XGBoost + QR decode/image features"
+    model_name = "XGBoost + QR decode/image features (70/15/15 split)"
     try:
         from xgboost import XGBClassifier
 
@@ -115,14 +115,14 @@ def train_qr_model(dataset_dir: Path, max_samples_per_class: int | None = None) 
         )
         try:
             model.fit(
-                x_fit,
-                y_fit,
+                x_train,
+                y_train,
                 eval_set=[(x_val, y_val)],
                 verbose=False,
                 early_stopping_rounds=50,
             )
         except TypeError:
-            model.fit(x_fit, y_fit, eval_set=[(x_val, y_val)], verbose=False)
+            model.fit(x_train, y_train, eval_set=[(x_val, y_val)], verbose=False)
     except ImportError:
         from sklearn.ensemble import RandomForestClassifier
 
@@ -133,8 +133,8 @@ def train_qr_model(dataset_dir: Path, max_samples_per_class: int | None = None) 
             min_samples_leaf=2,
             n_jobs=-1,
         )
-        model.fit(x_fit, y_fit)
-        model_name = "RandomForest + QR decode/image features"
+        model.fit(x_train, y_train)
+        model_name = "RandomForest + QR decode/image features (70/15/15 split)"
 
     y_pred = model.predict(x_test)
     y_prob = model.predict_proba(x_test)[:, 1]
@@ -142,19 +142,23 @@ def train_qr_model(dataset_dir: Path, max_samples_per_class: int | None = None) 
     metrics = evaluate_model(y_test, y_pred, y_prob)
     metrics["model"] = model_name
     metrics["dataset"] = str(dataset_dir)
+    metrics["split_method"] = "three-way (70% train, 15% validation, 15% test)"
+    metrics["train_samples"] = len(x_train)
+    metrics["validation_samples"] = len(x_val)
+    metrics["test_samples"] = len(x_test)
     metrics["decoded_rate"] = round(decoded_count / max(len(rows), 1), 6)
     metrics["samples"] = int(len(rows))
-    metrics["validation_samples"] = int(len(x_val))
 
     MODELS_DIR.mkdir(exist_ok=True)
-    model_out = MODELS_DIR / "qr_model.pkl"
+    model_out = MODELS_DIR / "qr_model_validation.pkl"
     joblib.dump(model, model_out)
 
-    save_confusion_plot(metrics["confusion_matrix"], "qr")
-    write_metrics("qr", metrics)
+    save_confusion_plot(metrics["confusion_matrix"], "qr_validation")
+    write_metrics("qr_validation", metrics)
 
-    print("QR model trained successfully")
+    print("QR model trained successfully with three-way split")
     print(f"Model saved to: {model_out}")
+    print(f"Train samples: {len(x_train)}, Validation samples: {len(x_val)}, Test samples: {len(x_test)}")
     print(metrics)
 
 
