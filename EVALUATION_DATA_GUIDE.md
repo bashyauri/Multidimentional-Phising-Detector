@@ -58,6 +58,87 @@ datasets/evaluation_samples/
 
 Keep this evaluation pack separate from training data where possible.
 
+## Dataset Split Methodology
+
+For robust model development and evaluation, the data should be split into three distinct sets:
+
+### 1. Training Dataset
+- **Purpose**: Used to train the model and learn patterns
+- **Size**: Typically 70-80% of available data
+- **Usage**: Model fitting and parameter learning
+
+### 2. Validation Dataset
+- **Purpose**: Used during training for hyperparameter tuning, model selection, and early stopping
+- **Size**: Typically 10-15% of available data
+- **Usage**: Monitor performance during training, prevent overfitting, select best model architecture
+- **Note**: This set is NOT used for final evaluation metrics reported in defence
+
+### 3. Testing Dataset (Evaluation Dataset)
+- **Purpose**: Used for final unbiased performance evaluation
+- **Size**: Typically 10-15% of available data
+- **Usage**: Generate final accuracy metrics, confusion matrices, and defence evidence
+- **Note**: This set must never be seen during training or validation
+
+### Recommended Split Ratios
+
+| Module | Training | Validation | Testing (Evaluation) |
+|---|---:|---:|---:|
+| URL | 70% | 15% | 15% |
+| Email | 70% | 15% | 15% |
+| SMS | 70% | 15% | 15% |
+| QR | 70% | 15% | 15% |
+| Video deepfake | 70% | 15% | 15% |
+| Voice deepfake | 70% | 15% | 15% |
+
+### Validation Dataset Storage
+
+Create a separate validation folder structure:
+
+```text
+datasets/validation/
+├── url/
+│   ├── legitimate_urls.csv
+│   └── phishing_urls.csv
+├── email/
+│   ├── legitimate_email_samples.csv
+│   └── phishing_email_samples.csv
+├── sms/
+│   ├── legitimate_sms_samples.csv
+│   └── phishing_sms_samples.csv
+├── qr/
+│   ├── legitimate/
+│   └── phishing/
+├── video_deepfake/
+│   ├── real/
+│   └── fake/
+└── voice_deepfake/
+    ├── real/
+    └── fake/
+```
+
+### Why Validation Datasets Are Required
+
+1. **Hyperparameter Tuning**: Adjust learning rates, batch sizes, and other parameters without touching test data
+2. **Model Selection**: Compare different architectures and choose the best performer
+3. **Early Stopping**: Prevent overfitting by monitoring validation loss during training
+4. **Unbiased Evaluation**: Ensure test set metrics are truly representative of real-world performance
+5. **Academic Rigour**: Standard machine learning practice required for research methodology
+
+### Validation Metrics to Track
+
+During training, monitor these metrics on the validation set:
+
+- **Validation Loss**: Should decrease alongside training loss
+- **Validation Accuracy**: Should stabilize and not diverge significantly from training accuracy
+- **Precision/Recall/F1**: Track to ensure balanced performance across classes
+- **Confusion Matrix**: Monitor for systematic errors on validation data
+
+### Important Defence Wording
+
+Recommended wording for methodology section:
+
+> The dataset was split into three distinct sets: training (70%), validation (15%), and testing (15%). The training set was used for model fitting, the validation set was used for hyperparameter tuning and model selection during training, and the testing set was reserved for final unbiased evaluation. This three-way split ensures that the reported performance metrics are not inflated by data leakage or overfitting to the test set.
+
 ## Required Samples Per Module
 
 | Module | Minimum Demo Samples | Better Defence Samples | Label Meaning |
