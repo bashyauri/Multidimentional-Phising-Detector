@@ -584,6 +584,22 @@ else:
 
 ## Dataset Selection and Preprocessing
 
+### Dataset Split Methodology
+
+For robust model development and evaluation, all datasets are split into three distinct sets following industry best practices:
+
+- **Training Dataset (70-80%)**: Used for model fitting and parameter learning
+- **Validation Dataset (10-20%)**: Used during training for hyperparameter tuning, model selection, and early stopping
+- **Testing Dataset (10-20%)**: Reserved for final unbiased performance evaluation
+
+The specific split ratios are determined based on dataset size:
+- Small datasets (< 1,000 samples): 60% train / 20% validation / 20% test
+- Medium datasets (1,000 - 10,000 samples): 70% train / 15% validation / 15% test
+- Large datasets (10,000 - 100,000 samples): 70% train / 15% validation / 15% test
+- Very large datasets (> 100,000 samples): 80% train / 10% validation / 10% test
+
+This three-way split ensures that reported performance metrics are not inflated by data leakage or overfitting to the test set. For detailed evaluation methodology and validation dataset requirements, see `EVALUATION_DATA_GUIDE.md`.
+
 ### URL Dataset: PhiUSIIL Phishing URL Dataset
 
 **Selection Rationale**:

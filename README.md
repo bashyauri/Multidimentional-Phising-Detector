@@ -234,6 +234,16 @@ The application requires datasets for training models. Place datasets in the `da
 
 Double-click `train_models.bat` to train all models sequentially.
 
+### Evaluation Methodology
+
+For detailed information on dataset splitting, validation datasets, and evaluation methodology, see `EVALUATION_DATA_GUIDE.md`. This guide covers:
+
+- Three-way dataset split (Training/Validation/Testing)
+- Recommended split ratios based on dataset size
+- Validation dataset requirements and storage
+- Why validation datasets are required for robust ML methodology
+- Sample requirements per module for demonstration and defence
+
 ### Manual Training
 
 **Train URL Model**:

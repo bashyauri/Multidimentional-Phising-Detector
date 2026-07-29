@@ -81,14 +81,25 @@ For robust model development and evaluation, the data should be split into three
 
 ### Recommended Split Ratios
 
-| Module | Training | Validation | Testing (Evaluation) |
+The optimal split ratio depends on your dataset size:
+
+| Dataset Size | Training | Validation | Testing (Evaluation) |
 |---|---:|---:|---:|
-| URL | 70% | 15% | 15% |
-| Email | 70% | 15% | 15% |
-| SMS | 70% | 15% | 15% |
-| QR | 70% | 15% | 15% |
-| Video deepfake | 70% | 15% | 15% |
-| Voice deepfake | 70% | 15% | 15% |
+| Small (< 1,000 samples) | 60% | 20% | 20% |
+| Medium (1,000 - 10,000 samples) | 70% | 15% | 15% |
+| Large (10,000 - 100,000 samples) | 70% | 15% | 15% |
+| Very Large (> 100,000 samples) | 80% | 10% | 10% |
+
+For this project's modules:
+
+| Module | Estimated Dataset Size | Training | Validation | Testing (Evaluation) |
+|---|---:|---:|---:|---:|
+| URL | Medium-Large | 70% | 15% | 15% |
+| Email | Medium | 70% | 15% | 15% |
+| SMS | Medium | 70% | 15% | 15% |
+| QR | Small-Medium | 60-70% | 15-20% | 15-20% |
+| Video deepfake | Large | 70% | 15% | 15% |
+| Voice deepfake | Medium | 70% | 15% | 15% |
 
 ### Validation Dataset Storage
 
