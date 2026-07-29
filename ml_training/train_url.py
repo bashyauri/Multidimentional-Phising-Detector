@@ -51,7 +51,7 @@ def train_url_model(dataset_path: Path):
         x = x_all.select_dtypes(include="number")
 
     x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42, stratify=y)
-    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y)
+    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
 
     try:
         from xgboost import XGBClassifier

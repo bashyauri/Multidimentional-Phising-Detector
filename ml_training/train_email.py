@@ -30,7 +30,7 @@ def train_email_model(dataset_path: Path):
     y = df[label_col].apply(normalize_label)
 
     x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=42, stratify=y)
-    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y)
+    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
 
     pipeline = Pipeline([
         ("tfidf", TfidfVectorizer(max_features=10000, ngram_range=(1, 2))),
