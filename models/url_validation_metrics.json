@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.9974271981905569,
+  "precision": 0.9958630879093819,
+  "recall": 0.9996539450266957,
+  "f1": 0.9977549157476624,
+  "confusion_matrix": [
+    [
+      15058,
+      84
+    ],
+    [
+      7,
+      20221
+    ]
+  ],
+  "tp": 20221,
+  "tn": 15058,
+  "fp": 84,
+  "fn": 7,
+  "roc_auc": 0.9991649775833793,
+  "model": "XGBoost + URL feature engineering (70/15/15 split)",
+  "dataset": "datasets\\qr\\PhiUSIIL_Phishing_URL_Dataset.csv",
+  "split_method": "three-way (70% train, 15% validation, 15% test)",
+  "train_samples": 165056,
+  "validation_samples": 35369,
+  "test_samples": 35370
+}

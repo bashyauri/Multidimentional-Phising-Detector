@@ -1,0 +1,29 @@
+{
+  "accuracy": 0.9830220713073005,
+  "precision": 0.976536312849162,
+  "recall": 0.9898074745186863,
+  "f1": 0.983127109111361,
+  "confusion_matrix": [
+    [
+      863,
+      21
+    ],
+    [
+      9,
+      874
+    ]
+  ],
+  "tp": 874,
+  "tn": 863,
+  "fp": 21,
+  "fn": 9,
+  "roc_auc": 0.9987784598986383,
+  "model": "RandomForestClassifier (70/15/15 split)",
+  "dataset": "datasets/voice/DATASET-balanced.csv",
+  "split_method": "three-way (70% train, 15% validation, 15% test)",
+  "train_samples": 8244,
+  "validation_samples": 1767,
+  "test_samples": 1767,
+  "test_size": 0.15,
+  "n_estimators": 100
+}

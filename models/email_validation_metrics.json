@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.993190330268982,
+  "precision": 0.9926940639269406,
+  "recall": 0.9951174855050351,
+  "f1": 0.9939042974702834,
+  "confusion_matrix": [
+    [
+      2573,
+      24
+    ],
+    [
+      16,
+      3261
+    ]
+  ],
+  "tp": 3261,
+  "tn": 2573,
+  "fp": 24,
+  "fn": 16,
+  "roc_auc": 0.9998152254032697,
+  "model": "LogisticRegression + TF-IDF (70/15/15 split)",
+  "dataset": "datasets\\email_phishing.csv",
+  "split_method": "three-way (70% train, 15% validation, 15% test)",
+  "train_samples": 27407,
+  "validation_samples": 5873,
+  "test_samples": 5874
+}

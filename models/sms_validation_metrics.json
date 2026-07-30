@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.9772727272727273,
+  "precision": 0.9043478260869565,
+  "recall": 0.9285714285714286,
+  "f1": 0.9162995594713657,
+  "confusion_matrix": [
+    [
+      713,
+      11
+    ],
+    [
+      8,
+      104
+    ]
+  ],
+  "tp": 104,
+  "tn": 713,
+  "fp": 11,
+  "fn": 8,
+  "roc_auc": 0.9889379439621151,
+  "model": "LogisticRegression + TF-IDF (balanced, 70/15/15 split)",
+  "dataset": "datasets\\sms_spam.csv",
+  "split_method": "three-way (70% train, 15% validation, 15% test)",
+  "train_samples": 3900,
+  "validation_samples": 836,
+  "test_samples": 836
+}
