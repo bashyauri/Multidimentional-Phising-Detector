@@ -79,6 +79,34 @@ The two-way split (80/20) only separates training and testing data, which can le
 
 **Analysis**: Voice model shows minimal performance difference between split methods, with slight decrease across all metrics using three-way split. The consistency indicates stable performance across different test compositions.
 
+### Video Deepfake Detection Model
+
+**Note**: Three-way split validation training for the video deepfake model was deferred due to computational constraints.
+
+| Metric | Two-Way Split (80/20) |
+|---|---:|
+| **Accuracy** | 83.50% |
+| **Precision** | 87.22% |
+| **Recall** | 78.50% |
+| **F1-Score** | 82.63% |
+| **ROC-AUC** | 92.10% |
+| **Test Samples** | 400 |
+
+**Computational Constraints**:
+- Video deepfake training requires processing video frames through CNN (EfficientNet-B0)
+- Each video requires extracting 4-8 frames for processing
+- Training time: Several hours on GPU, 10+ hours on CPU
+- Memory-intensive with batch size limited to 2
+- Requires GPU acceleration for practical training time
+- Current infrastructure lacks sufficient GPU resources
+
+**Available Resources**:
+- Original two-way split model: `models/deepfake_efficientnet_b0.pt`
+- Original metrics: `models/deepfake_efficientnet_b0_metrics.json`
+- Validation training script: `ml_training/train_deepfake_efficientnet_validation.py` (ready for future training)
+
+**Future Work**: The validation training script is available and can be executed when GPU resources are available to complete the three-way split comparison.
+
 ## Summary Statistics
 
 ### Overall Performance Trends
@@ -90,6 +118,9 @@ The two-way split (80/20) only separates training and testing data, which can le
 | SMS | 97.85% | 97.73% | -0.12% | Moderate (small dataset) |
 | QR | 90.65% | 84.00% | -6.65% | High (very small test set) |
 | Voice | 98.51% | 98.30% | -0.21% | Minimal (medium dataset) |
+| Video Deepfake | 83.50% | *Deferred* | N/A | N/A (computational constraints) |
+
+**Note**: Video deepfake three-way split training deferred due to computational constraints (requires GPU, 10+ hours CPU training time). Original two-way split results provided.
 
 ### Key Findings
 
