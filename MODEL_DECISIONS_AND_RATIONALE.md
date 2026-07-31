@@ -598,7 +598,28 @@ The specific split ratios are determined based on dataset size:
 - Large datasets (10,000 - 100,000 samples): 70% train / 15% validation / 15% test
 - Very large datasets (> 100,000 samples): 80% train / 10% validation / 10% test
 
-**Implementation**: All models have been trained using the three-way split methodology (70/15/15) to ensure rigorous academic evaluation. For academic comparison purposes, both two-way (80/20) and three-way (70/15/15) split models were trained and evaluated. The comprehensive comparison of performance differences between split methodologies is documented in `DATASET_SPLIT_COMPARISON.md`.
+**Implementation**: All models have been trained using the three-way split methodology (70/15/15) to ensure rigorous academic evaluation. For academic comparison purposes, both two-way (80/20) and three-way (70/15/15) split models were trained and evaluated.
+
+### Dataset Split Performance Comparison
+
+The following table summarizes the performance differences between two-way (80/20) and three-way (70/15/15) dataset splits:
+
+| Model | Two-Way Accuracy | Three-Way Accuracy | Difference | Impact Assessment |
+|---|---:|---:|---:|---:|
+| URL | 99.74% | 99.74% | 0.00% | Minimal - robust to split method |
+| Email | 99.30% | 99.32% | +0.02% | Minimal - consistent performance |
+| SMS | 97.85% | 97.73% | -0.12% | Moderate - small dataset sensitivity |
+| QR | 90.65% | 84.00% | -6.65% | High - test set size impact |
+| Voice | 98.51% | 98.30% | -0.21% | Minimal - stable performance |
+| Video Deepfake | 83.50% | *Deferred* | N/A | Computational constraints |
+
+**Key Findings**:
+- Large datasets (URL, Email, Voice) show minimal performance variation between split methods
+- Small datasets (SMS) show moderate variation due to higher sensitivity to test composition
+- Very small test sets (QR) show significant impact, highlighting importance of adequate test set size
+- Three-way split provides more rigorous academic evaluation with comparable performance
+
+For comprehensive analysis including precision, recall, F1-score, ROC-AUC, and detailed methodology, see `DATASET_SPLIT_COMPARISON.md`.
 
 This three-way split ensures that reported performance metrics are not inflated by data leakage or overfitting to the test set. For detailed evaluation methodology and validation dataset requirements, see `EVALUATION_DATA_GUIDE.md`.
 
