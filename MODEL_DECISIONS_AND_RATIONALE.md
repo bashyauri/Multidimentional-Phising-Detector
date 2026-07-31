@@ -598,6 +598,8 @@ The specific split ratios are determined based on dataset size:
 - Large datasets (10,000 - 100,000 samples): 70% train / 15% validation / 15% test
 - Very large datasets (> 100,000 samples): 80% train / 10% validation / 10% test
 
+**Implementation**: All models have been trained using the three-way split methodology (70/15/15) to ensure rigorous academic evaluation. For academic comparison purposes, both two-way (80/20) and three-way (70/15/15) split models were trained and evaluated. The comprehensive comparison of performance differences between split methodologies is documented in `DATASET_SPLIT_COMPARISON.md`.
+
 This three-way split ensures that reported performance metrics are not inflated by data leakage or overfitting to the test set. For detailed evaluation methodology and validation dataset requirements, see `EVALUATION_DATA_GUIDE.md`.
 
 ### URL Dataset: PhiUSIIL Phishing URL Dataset
