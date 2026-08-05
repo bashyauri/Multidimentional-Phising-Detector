@@ -1,7 +1,7 @@
 PHISHING RESEARCH APP - CLIENT QUICK START
 =========================================
 
-1) Install Python 3.13+ from:
+1) Install Python 3.9+ from:
    https://www.python.org/downloads/
    During install, enable: Add Python to PATH
 
