@@ -76,21 +76,28 @@ project/
 
 ## Installation Guide
 
-### Windows Installation (Recommended)
+### Windows Installation (Recommended - One-Click Setup)
 
-#### Option 1: One-Click Installation (Non-Technical Users)
+**For Non-Technical Users - Simplest Method:**
 
-1. Install Python 3.9+ from [python.org](https://www.python.org/downloads/)
-   - During installation, **check "Add Python to PATH"**
+1. **Install Python 3.9+** from [python.org](https://www.python.org/downloads/)
+   - During installation, **CHECK "Add Python to PATH"** (this is critical!)
    - Select "Install for all users" (optional but recommended)
 
-2. Download/clone this repository to your computer
+2. **Download/clone** this repository to any folder on your computer
 
-3. Double-click `launch_client.bat`
-   - First run: Automatically sets up virtual environment and installs dependencies
-   - Subsequent runs: Starts the application directly
+3. **Double-click `launch_client.bat`**
+   - **First run only**: Automatically creates virtual environment and installs all dependencies
+   - **Subsequent runs**: Starts the application immediately
+   - This file handles everything automatically - no manual commands needed
 
-4. (Optional) Double-click `create_desktop_shortcut.bat` to add a desktop launcher
+4. **Your browser opens automatically** at: http://127.0.0.1:5000
+
+**Optional Enhancements:**
+- **Desktop Shortcut**: Double-click `create_desktop_shortcut.bat` to add a launcher to your desktop
+- **Model Training**: After adding datasets, double-click `train_models.bat` to train all models
+
+**That's it!** The batch file handles all technical setup automatically.
 
 #### Option 2: Manual Installation (Technical Users)
 
@@ -431,6 +438,16 @@ All API endpoints include comprehensive debug information:
 **Python not found**:
 - Ensure Python 3.9+ is installed
 - Verify "Add Python to PATH" was checked during installation
+
+**"No module named 'xgboost'" or other missing dependencies**:
+- Delete the `.venv` folder if it exists
+- Double-click `launch_client.bat` again (it will reinstall all dependencies)
+- This happens if requirements.txt was updated after initial installation
+
+**Dependencies installation fails**:
+- Ensure you have internet connection
+- Try running as Administrator
+- Check that Python is properly installed: `python --version`
 
 **Module not found errors**:
 - Ensure virtual environment is activated
