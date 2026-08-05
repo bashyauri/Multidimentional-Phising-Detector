@@ -8,7 +8,7 @@ echo [INFO] Smart launcher started...
 where python >nul 2>nul
 if errorlevel 1 (
   echo [ERROR] Python is not installed or not in PATH.
-  echo Install Python 3.13+ from https://www.python.org/downloads/
+  echo Install Python 3.9+ from https://www.python.org/downloads/
   pause
   exit /b 1
 )
