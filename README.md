@@ -68,7 +68,7 @@ project/
 
 ## System Requirements
 
-- **Python**: 3.10 or higher (3.13+ recommended)
+- **Python**: 3.9 or higher (3.11+ recommended for best compatibility)
 - **Operating System**: Windows 10/11, Linux, or macOS
 - **RAM**: Minimum 8GB (16GB recommended for deepfake training)
 - **Storage**: Minimum 10GB free space (50GB+ for deepfake datasets)
@@ -80,7 +80,7 @@ project/
 
 #### Option 1: One-Click Installation (Non-Technical Users)
 
-1. Install Python 3.13+ from [python.org](https://www.python.org/downloads/)
+1. Install Python 3.9+ from [python.org](https://www.python.org/downloads/)
    - During installation, **check "Add Python to PATH"**
    - Select "Install for all users" (optional but recommended)
 
@@ -94,7 +94,7 @@ project/
 
 #### Option 2: Manual Installation (Technical Users)
 
-1. **Install Python 3.13+**
+1. **Install Python 3.9+**
    ```bash
    # Download from https://www.python.org/downloads/
    # Ensure "Add Python to PATH" is checked during installation
@@ -126,14 +126,14 @@ project/
 
 ### Linux/macOS Installation
 
-1. **Install Python 3.10+**
+1. **Install Python 3.9+**
    ```bash
    # Ubuntu/Debian
    sudo apt update
-   sudo apt install python3.10 python3.10-venv python3-pip
+   sudo apt install python3.9 python3.9-venv python3-pip
 
    # macOS (using Homebrew)
-   brew install python@3.10
+   brew install python@3.9
    ```
 
 2. **Clone Repository**
@@ -144,7 +144,7 @@ project/
 
 3. **Create Virtual Environment**
    ```bash
-   python3.10 -m venv .venv
+   python3.9 -m venv .venv
    source .venv/bin/activate
    ```
 
@@ -429,7 +429,7 @@ All API endpoints include comprehensive debug information:
 ### Common Issues
 
 **Python not found**:
-- Ensure Python 3.10+ is installed
+- Ensure Python 3.9+ is installed
 - Verify "Add Python to PATH" was checked during installation
 
 **Module not found errors**:
