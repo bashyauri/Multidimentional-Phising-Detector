@@ -84,14 +84,19 @@ project/
    - During installation, **CHECK "Add Python to PATH"** (this is critical!)
    - Select "Install for all users" (optional but recommended)
 
-2. **Download/clone** this repository to any folder on your computer
+2. **Download/clone** this repository to your computer
 
-3. **Double-click `launch_client.bat`**
+3. **(Optional) Download Datasets** - For model training:
+   - Double-click `download_datasets.bat` to automatically download required datasets
+   - Some datasets may require manual download from Kaggle (script provides instructions)
+   - Datasets are placed in the `datasets/` folder
+
+4. **Double-click `launch_client.bat`**
    - **First run only**: Automatically creates virtual environment and installs all dependencies
    - **Subsequent runs**: Starts the application immediately
    - This file handles everything automatically - no manual commands needed
 
-4. **Your browser opens automatically** at: http://127.0.0.1:5000
+5. **Your browser opens automatically** at: http://127.0.0.1:5000
 
 **Optional Enhancements:**
 - **Desktop Shortcut**: Double-click `create_desktop_shortcut.bat` to add a launcher to your desktop

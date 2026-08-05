@@ -7,11 +7,16 @@ PHISHING RESEARCH APP - CLIENT QUICK START
 
 2) Extract this package to any folder.
 
-3) Double-click: launch_client.bat
+3) (Optional) Download datasets for model training:
+   Double-click: download_datasets.bat
+   - This will attempt to download all required datasets
+   - Some datasets may require manual download (instructions provided)
+
+4) Double-click: launch_client.bat
    - First run: it will auto-install dependencies.
    - Next runs: it starts the app immediately.
 
-4) Your browser should open automatically at:
+5) Your browser should open automatically at:
    http://127.0.0.1:5000
 
 Optional:
