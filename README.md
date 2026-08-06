@@ -84,7 +84,12 @@ project/
    - During installation, **CHECK "Add Python to PATH"** (this is critical!)
    - Select "Install for all users" (optional but recommended)
 
-2. **Download/clone** this repository to your computer
+2. **Download/clone** this repository to a **short path** on your computer
+   - **IMPORTANT**: Windows has a 260 character path limit
+   - **Recommended paths**: `C:\Phising` or `C:\Projects\Phising`
+   - **Avoid**: OneDrive, Desktop with long names, deeply nested folders
+   - Example of problematic path: `C:\Users\Name\OneDrive - Company\Desktop\LongProjectName\`
+   - If you get "filename too long" error, move to a shorter path
 
 3. **(Optional) Download Datasets** - For model training:
    - Double-click `download_datasets.bat` to automatically download required datasets

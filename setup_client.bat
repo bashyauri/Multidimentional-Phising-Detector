@@ -33,6 +33,21 @@ echo [INFO] Installing dependencies...
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 if errorlevel 1 (
   echo [ERROR] Failed to install requirements.
+  echo.
+  echo COMMON ISSUE: Windows path too long error
+  echo ========================================
+  echo If you see a "filename or extension is too long" error,
+  echo this is because your project path is too long for Windows.
+  echo.
+  echo SOLUTION: Move the project folder to a shorter path:
+  echo   - Current path: %CD%
+  echo   - Recommended: C:\Phising or C:\Projects\Phising
+  echo   - Avoid: OneDrive, Desktop with long names, nested folders
+  echo.
+  echo After moving to a shorter path:
+  echo   1. Delete the .venv folder
+  echo   2. Double-click launch_client.bat again
+  echo.
   pause
   exit /b 1
 )

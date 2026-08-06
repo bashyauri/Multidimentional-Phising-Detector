@@ -5,7 +5,11 @@ PHISHING RESEARCH APP - CLIENT QUICK START
    https://www.python.org/downloads/
    During install, enable: Add Python to PATH
 
-2) Extract this package to any folder.
+2) Extract this package to a SHORT path:
+   IMPORTANT: Windows has a 260 character path limit
+   - Recommended: C:\Phising or C:\Projects\Phising
+   - AVOID: OneDrive, Desktop with long names, nested folders
+   - If you get "filename too long" error, move to shorter path
 
 3) (Optional) Download datasets for model training:
    Double-click: download_datasets.bat
