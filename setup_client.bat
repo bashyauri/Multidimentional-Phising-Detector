@@ -39,7 +39,20 @@ if errorlevel 1 (
   echo If you see a "filename or extension is too long" error,
   echo this is because your project path is too long for Windows.
   echo.
-  echo SOLUTION: Move the project folder to a shorter path:
+  echo AUTOMATIC FIX AVAILABLE!
+  echo.
+  set /p "FIX=Would you like to automatically fix this issue? (Y/N): "
+  if /i "%FIX%"=="Y" (
+    echo.
+    echo [INFO] Running automatic path fix tool...
+    call fix_path_issue.bat
+    echo.
+    echo [INFO] Please run launch_client.bat again from the new location.
+    pause
+    exit /b 1
+  )
+  echo.
+  echo MANUAL SOLUTION: Move the project folder to a shorter path:
   echo   - Current path: %CD%
   echo   - Recommended: C:\Phising or C:\Projects\Phising
   echo   - Avoid: OneDrive, Desktop with long names, nested folders

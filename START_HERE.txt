@@ -9,7 +9,7 @@ PHISHING RESEARCH APP - CLIENT QUICK START
    IMPORTANT: Windows has a 260 character path limit
    - Recommended: C:\Phising or C:\Projects\Phising
    - AVOID: OneDrive, Desktop with long names, nested folders
-   - If you get "filename too long" error, move to shorter path
+   - If you get "filename too long" error: Double-click fix_path_issue.bat
 
 3) (Optional) Download datasets for model training:
    Double-click: download_datasets.bat

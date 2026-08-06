@@ -89,7 +89,7 @@ project/
    - **Recommended paths**: `C:\Phising` or `C:\Projects\Phising`
    - **Avoid**: OneDrive, Desktop with long names, deeply nested folders
    - Example of problematic path: `C:\Users\Name\OneDrive - Company\Desktop\LongProjectName\`
-   - If you get "filename too long" error, move to a shorter path
+   - **If you get "filename too long" error**: Double-click `fix_path_issue.bat` to automatically fix it
 
 3. **(Optional) Download Datasets** - For model training:
    - Double-click `download_datasets.bat` to automatically download required datasets
