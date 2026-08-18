@@ -6,6 +6,14 @@ import pandas as pd
 import qrcode
 from PIL import Image, ImageEnhance, ImageFilter
 
+# Handle Pillow version compatibility for resampling
+try:
+    # Pillow 9.0.0+
+    RESAMPLING = Image.Resampling.LANCZOS
+except AttributeError:
+    # Pillow < 9.0.0
+    RESAMPLING = Image.LANCZOS
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "datasets"
@@ -75,7 +83,7 @@ def generate_qr_code(url: str, output_path: Path, size: int = 500, augment: bool
             img = apply_augmentation(img, augment=True)
         
         # Resize to desired size
-        img = img.resize((size, size), Image.Resampling.LANCZOS)
+        img = img.resize((size, size), RESAMPLING)
         
         # Save the image
         output_path.parent.mkdir(parents=True, exist_ok=True)
